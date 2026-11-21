@@ -27,10 +27,11 @@ My study plan for Google Cloud. It is a plan, not a list of things I already mas
 - **2026-11-21:** Lab 04 deployed: e-mail channel, three alerts (CPU, VM silent, IAM change) and a R$ 50 monthly budget that subtracts Free Tier but not promotional credits, to keep spending under US$ 10 a month. Enabling the Cloud Resource Manager API was a missing prerequisite (now in the lab README).
 - **2026-11-21:** Lab 06 deployed: Workload Identity Federation pool and provider pinned to this repository and to pull requests, a keyless read-only service account and the `terraform plan` workflow for labs 01 and 02.
 - **2026-11-21:** Lab 05 deployed in two stages: Artifact Registry, secret and service account first, then the `status-api:1.0.0` image and the private Cloud Run service. Without a token it returns 403; with an identity token it returns `greetingConfigured: true`. All six labs are now deployed.
+- **2026-11-21:** Lab 07 (Cloud NAT) written, deployed, tested and destroyed in about 2 minutes. Before: the private VM timed out reaching the internet; with NAT: `curl` 200 and `apt-get update` worked; after destroy: timeout again.
 
 ## Next
 
-1. Cloud NAT for the private VM, then Cloud SQL with private access.
+1. Cloud SQL with private access, deployed and destroyed on the same day to stay under the monthly budget.
 
 ## What I still want to study
 

@@ -15,7 +15,7 @@ My on-premises Microsoft labs are in [microsoft-infra-labs](https://github.com/m
 ## What is inside
 
 ```text
-projects/   6 Terraform labs, all deployed
+projects/   7 Terraform labs: 6 deployed, 1 turned on only when needed (Cloud NAT)
 scripts/    gcloud scripts to audit security and find forgotten costs
 dicas/      tips: gcloud, Terraform, security, costs, common errors, ACE study (Portuguese)
 ```
@@ -30,6 +30,7 @@ dicas/      tips: gcloud, Terraform, security, costs, common errors, ACE study (
 | 04 | [Monitoring and budget](projects/04-monitoring-alerts/README.md) | Alerts for CPU, VM down and IAM changes; monthly budget with a forecast alert | **Deployed** on 2026-11-21, alerts tested |
 | 05 | [App on Cloud Run](projects/05-cloud-run-app/README.md) | Container in Artifact Registry, private Cloud Run service, secret read from Secret Manager | **Deployed** on 2026-11-21, called with an identity token |
 | 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.md) | GitHub Actions reaching Google Cloud with no stored key, with a pinned trust condition | **Deployed** on 2026-11-21 |
+| 07 | [Cloud NAT](projects/07-cloud-nat/README.md) | Outbound-only internet access for the private VM, no public IP and no inbound port | **Tested** on 2026-11-21 and destroyed (turned on only when needed) |
 
 ## How the deployed labs fit
 
@@ -80,6 +81,7 @@ When I ran the audit on this project, it found three default settings Google cre
 │   ├── 04-monitoring-alerts/
 │   ├── 05-cloud-run-app/                 # Terraform + app/ (Node.js, Dockerfile, tests)
 │   ├── 06-workload-identity-federation/  # Terraform + examples/ (keyless workflow)
+│   ├── 07-cloud-nat/                     # Cloud Router + NAT, turned on only when needed
 │   └── archive/                          # my first prototype, kept for reference
 ├── scripts/                              # gcloud audit and cost scripts
 ├── dicas/                                # tips (Portuguese)
@@ -88,7 +90,6 @@ When I ran the audit on this project, it found three default settings Google cre
 
 ## Next steps
 
-- Cloud NAT so the private VM can get updates without a public IP
 - Cloud SQL with private access for the Cloud Run app
 - The Associate Cloud Engineer (ACE) certification
 
