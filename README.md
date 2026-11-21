@@ -15,7 +15,7 @@ My on-premises Microsoft labs are in [microsoft-infra-labs](https://github.com/m
 ## What is inside
 
 ```text
-projects/   6 Terraform labs (4 deployed, 2 validated and waiting to deploy)
+projects/   6 Terraform labs (5 deployed, 1 validated and waiting to deploy)
 scripts/    gcloud scripts to audit security and find forgotten costs
 dicas/      tips: gcloud, Terraform, security, costs, common errors, ACE study (Portuguese)
 ```
@@ -29,7 +29,7 @@ dicas/      tips: gcloud, Terraform, security, costs, common errors, ACE study (
 | 03 | [Terraform state bucket](projects/03-terraform-backend/README.md) | Locked-down GCS backend with versioning, Soft Delete, locking and a recovery procedure | **Deployed** on 2026-11-20, holds the state of labs 01 and 02 |
 | 04 | [Monitoring and budget](projects/04-monitoring-alerts/README.md) | Alerts for CPU, VM down and IAM changes; monthly budget with a forecast alert | **Deployed** on 2026-11-21, alerts tested |
 | 05 | [App on Cloud Run](projects/05-cloud-run-app/README.md) | Container in Artifact Registry, private Cloud Run service, secret read from Secret Manager | Validated in CI, not deployed yet |
-| 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.md) | GitHub Actions reaching Google Cloud with no stored key, with a pinned trust condition | Validated in CI, not deployed yet |
+| 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.md) | GitHub Actions reaching Google Cloud with no stored key, with a pinned trust condition | **Deployed** on 2026-11-21 |
 
 ## How the deployed labs fit
 
@@ -64,7 +64,7 @@ When I ran the audit on this project, it found three default settings Google cre
 - Every resource is in Terraform. The Google provider is pinned to `7.46.2` and the lock files are committed.
 - Inputs like project ID, CIDR ranges, e-mail and billing account are validated before any API call.
 - State lives in a versioned GCS bucket with locking, one prefix per lab.
-- GitHub Actions runs `terraform fmt`, `init -backend=false` and `validate` for each lab, a Checkov scan, the Cloud Run app tests and ShellCheck on the scripts. CI has no cloud credentials (Lab 06 is what will change that, without keys).
+- GitHub Actions runs `terraform fmt`, `init -backend=false` and `validate` for each lab, a Checkov scan, the Cloud Run app tests and ShellCheck on the scripts. Pull requests that touch `projects/` also run a keyless `terraform plan` for labs 01 and 02 (Lab 06).
 - When I accept a Checkov finding, I write the reason in a `#checkov:skip` comment next to the resource. When Checkov is right, I fix the code: in Lab 06 it flagged the Viewer role, and I replaced it with narrow read-only roles.
 - No public IPs, SSH only through IAP, OS Login, Shielded VM and service accounts without keys or project roles.
 
@@ -88,7 +88,7 @@ When I ran the audit on this project, it found three default settings Google cre
 
 ## Next steps
 
-- Deploy labs 04 to 06 and turn on `terraform plan` in pull requests without keys
+- Deploy Lab 05 (Cloud Run)
 - Cloud NAT so the private VM can get updates without a public IP
 - Cloud SQL with private access for the Cloud Run app
 - The Associate Cloud Engineer (ACE) certification

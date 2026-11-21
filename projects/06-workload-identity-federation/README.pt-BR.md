@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Situação:** código escrito e validado no CI (fmt, validate, Checkov). Ainda não implantado.
+**Situação:** implantado em 21/11/2026 (17 recursos, `terraform plan` sem mudanças depois). O workflow está ativo em [`.github/workflows/terraform-plan.yml`](../../.github/workflows/terraform-plan.yml).
 
 Hoje o meu CI só confere a sintaxe, porque não tem acesso à nuvem. O atalho comum é criar uma chave de conta de serviço, colar o JSON num secret do GitHub e esquecer lá por anos. Essa chave é o vazamento clássico. Este lab dá ao GitHub Actions acesso ao Google Cloud sem nenhuma chave guardada: o GitHub prova quem é com um token de vida curta, e o Google troca esse token por credenciais temporárias.
 
@@ -13,7 +13,7 @@ Job do GitHub Actions (pull request em matheuslab-bit/google-cloud-portfolio)
    │  1. pede um token OIDC ao GitHub (id-token: write)
    ▼
 Workload Identity Pool "github-actions" / provedor "github-oidc"
-   │  2. confere o emissor e a condição: repositório certo E sub = repo:...:pull_request
+   │  2. confere o emissor e a condição: ID do repositório E sub imutável = repo:DONO@ID/NOME@ID:pull_request
    ▼
 Security Token Service
    │  3. devolve um token federado
@@ -33,11 +33,12 @@ terraform plan contra o projeto real e o state remoto
 | Conta de serviço `github-terraform-plan` | Sem chaves. Só este repositório consegue usá-la |
 | Papéis só de leitura | Compute, contas de serviço, políticas de IAM, APIs ativas, Monitoring, Logging, Cloud Run, Artifact Registry e metadados de segredos |
 | Acesso ao bucket de state | Só aos objetos em `labs/`, necessário para criar e apagar o `.tflock` durante o `plan` |
-| Workflow de exemplo | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), fora de `.github/workflows` até o lab ser implantado |
+| Workflow de exemplo | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), guardado como referência; a cópia ativa está em `.github/workflows/terraform-plan.yml` |
 
 ## Decisões que tomei
 
-- **A condição é a segurança.** Um provedor sem `attribute_condition` aceita token de qualquer repositório do GitHub no mundo. O meu confere o repositório e ainda fixa o campo `sub` em `repo:matheuslab-bit/google-cloud-portfolio:pull_request`, então só execuções de pull request deste repositório entram. Aplicar mudanças a partir da `main` exigiria uma segunda identidade, separada, com `ref:refs/heads/main`.
+- **A condição é a segurança.** Um provedor sem `attribute_condition` aceita token de qualquer repositório do GitHub no mundo. O meu confere o ID do repositório e fixa o campo `sub` em `repo:matheuslab-bit@343780539/google-cloud-portfolio@1466069275:pull_request`, então só execuções de pull request deste repositório entram. Aplicar mudanças a partir da `main` exigiria uma segunda identidade, separada.
+- **Sub imutável.** Este repositório usa o formato imutável do `sub` do GitHub, com os IDs do dono e do repositório ao lado dos nomes. A minha primeira condição esperava o formato antigo `repo:DONO/NOME:pull_request`, e no primeiro teste o GitHub teve o token recusado (`rejected by the attribute condition`). Corrigi montando o `sub` a partir de `github_repository_id` e `github_repository_owner_id` (lidos com `gh api repos/DONO/NOME`). Os IDs ainda impedem que um repositório apagado e recriado com o mesmo nome entre.
 - **Sem o papel Viewer.** O Checkov apontou o `roles/viewer` (CKV_GCP_117), e estava certo: ele lê quase tudo. Troquei pelos papéis de leitura específicos que o `plan` precisa nestes labs.
 - **Até o `plan` grava uma coisa.** Ele cria e apaga o objeto `.tflock` no bucket de state. Uma condição de IAM limita essa escrita ao prefixo `labs/`.
 - **Valor de segredo fica de fora.** O `roles/secretmanager.viewer` mostra os metadados dos segredos, não o conteúdo. Ler valores exigiria `secretAccessor`, que o CI não recebe.
@@ -79,4 +80,5 @@ Workload Identity Federation, Security Token Service e contas de serviço não t
 - [x] Terraform escrito: pool, provedor com condição fixada, conta de serviço sem chave, papéis restritos e acesso condicional ao bucket
 - [x] Workflow de exemplo pronto para ativar
 - [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
-- [ ] Implantado e `terraform plan` rodando num pull request sem nenhuma chave
+- [x] Implantado em 21/11/2026 e variáveis do repositório criadas
+- [x] `terraform plan` rodando num pull request sem nenhuma chave: PR #5, `No changes` nos labs 01 e 02 (21/11/2026)

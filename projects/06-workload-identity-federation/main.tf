@@ -23,8 +23,16 @@ resource "google_iam_workload_identity_pool" "github" {
   depends_on = [google_project_service.apis]
 }
 
+locals {
+  github_owner = split("/", var.github_repository)[0]
+  github_name  = split("/", var.github_repository)[1]
+
+  # Immutable sub format: repo:OWNER@OWNER_ID/NAME@REPOSITORY_ID:pull_request
+  github_pr_subject = "repo:${local.github_owner}@${var.github_repository_owner_id}/${local.github_name}@${var.github_repository_id}:pull_request"
+}
+
 resource "google_iam_workload_identity_pool_provider" "github" {
-  #checkov:skip=CKV_GCP_125:False positive. Checkov does not resolve var.github_repository inside attribute_condition; the condition pins both the repository and the sub claim (repo:OWNER/NAME:pull_request).
+  #checkov:skip=CKV_GCP_125:False positive. Checkov does not resolve the variables inside attribute_condition; the condition pins the repository ID and the immutable sub claim (repo:OWNER@ID/NAME@ID:pull_request).
   project                            = var.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-oidc"
@@ -38,8 +46,10 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 
   # Without a condition, a workflow in ANY GitHub repository could ask for a token.
-  # Pinning the "sub" claim allows only pull request runs of this one repository.
-  attribute_condition = "assertion.repository == '${var.github_repository}' && assertion.sub == 'repo:${var.github_repository}:pull_request'"
+  # Pinning the "sub" claim allows only pull request runs of this one repository. The repository uses
+  # GitHub's immutable subject (owner and repository IDs in the sub), so a deleted and recreated
+  # repository with the same name cannot match.
+  attribute_condition = "assertion.repository_id == '${var.github_repository_id}' && assertion.sub == '${local.github_pr_subject}'"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
