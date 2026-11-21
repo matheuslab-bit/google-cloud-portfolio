@@ -15,7 +15,7 @@ My on-premises Microsoft labs are in [microsoft-infra-labs](https://github.com/m
 ## What is inside
 
 ```text
-projects/   6 Terraform labs (5 deployed, 1 validated and waiting to deploy)
+projects/   6 Terraform labs, all deployed
 scripts/    gcloud scripts to audit security and find forgotten costs
 dicas/      tips: gcloud, Terraform, security, costs, common errors, ACE study (Portuguese)
 ```
@@ -28,7 +28,7 @@ dicas/      tips: gcloud, Terraform, security, costs, common errors, ACE study (
 | 02 | [Private VM](projects/02-secure-compute-engine/README.md) | Debian VM with no public IP, SSH only through IAP and OS Login, Shielded VM, firewall ordering | **Deployed**, access tested on 2026-11-18 |
 | 03 | [Terraform state bucket](projects/03-terraform-backend/README.md) | Locked-down GCS backend with versioning, Soft Delete, locking and a recovery procedure | **Deployed** on 2026-11-20, holds the state of labs 01 and 02 |
 | 04 | [Monitoring and budget](projects/04-monitoring-alerts/README.md) | Alerts for CPU, VM down and IAM changes; monthly budget with a forecast alert | **Deployed** on 2026-11-21, alerts tested |
-| 05 | [App on Cloud Run](projects/05-cloud-run-app/README.md) | Container in Artifact Registry, private Cloud Run service, secret read from Secret Manager | Validated in CI, not deployed yet |
+| 05 | [App on Cloud Run](projects/05-cloud-run-app/README.md) | Container in Artifact Registry, private Cloud Run service, secret read from Secret Manager | **Deployed** on 2026-11-21, called with an identity token |
 | 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.md) | GitHub Actions reaching Google Cloud with no stored key, with a pinned trust condition | **Deployed** on 2026-11-21 |
 
 ## How the deployed labs fit
@@ -88,7 +88,6 @@ When I ran the audit on this project, it found three default settings Google cre
 
 ## Next steps
 
-- Deploy Lab 05 (Cloud Run)
 - Cloud NAT so the private VM can get updates without a public IP
 - Cloud SQL with private access for the Cloud Run app
 - The Associate Cloud Engineer (ACE) certification

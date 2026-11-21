@@ -11,7 +11,7 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 - [x] Primeiro projeto no GCP com proteções de cobrança (orçamento e alertas implantados e testados no [Lab 04](projects/04-monitoring-alerts/README.pt-BR.md))
 - [x] Compute Engine e VPC: [Lab 01](projects/01-vpc-network/README.pt-BR.md) e [Lab 02](projects/02-secure-compute-engine/README.pt-BR.md)
 - [ ] Lab de IAM e segurança (parte já coberta no Lab 02: conta de serviço dedicada, IAP, OS Login)
-- [ ] Aplicação publicada no Cloud Run (código pronto no [Lab 05](projects/05-cloud-run-app/README.pt-BR.md))
+- [x] Aplicação publicada no Cloud Run ([Lab 05](projects/05-cloud-run-app/README.pt-BR.md))
 - [ ] Lab de monitoramento e logs (código pronto no [Lab 04](projects/04-monitoring-alerts/README.pt-BR.md))
 - [x] Projeto com Terraform: labs 01 a 03 com state remoto no GCS
 - [x] Três projetos documentados no portfólio: [índice de projetos](projects/README.pt-BR.md)
@@ -26,11 +26,11 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 - **21/11/2026:** Achados da auditoria corrigidos (primeiro o backup, depois as duas regras da rede `default` apagadas e o Editor removido da conta de serviço padrão do Compute). A auditoria agora termina com 0 alertas.
 - **21/11/2026:** Lab 04 implantado: canal de e-mail, três alertas (CPU, VM em silêncio, mudança de IAM) e um orçamento de R$ 50 por mês que desconta o Free Tier, mas não os créditos promocionais, para manter o gasto abaixo de US$ 10 por mês. Faltava ativar a API Cloud Resource Manager (agora está no README do lab).
 - **21/11/2026:** Lab 06 implantado: pool e provedor de Workload Identity Federation fixados neste repositório e em pull requests, conta de serviço só de leitura sem chave e o workflow de `terraform plan` dos labs 01 e 02.
+- **21/11/2026:** Lab 05 implantado em duas etapas: primeiro Artifact Registry, segredo e conta de serviço, depois a imagem `status-api:1.0.0` e o serviço privado no Cloud Run. Sem token ele responde 403; com token de identidade responde `greetingConfigured: true`. Os seis labs estão implantados.
 
 ## Próximos passos
 
-1. Implantar o Lab 05 (Cloud Run) e marcar o checklist.
-2. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
+1. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
 
 ## O que ainda quero estudar
 

@@ -24,7 +24,7 @@ Deployed and alerts triggered in a test on 2026-11-21.
 
 **[05: App on Cloud Run](05-cloud-run-app/README.md)**
 Node.js status API in a container, Artifact Registry with cleanup rules, private Cloud Run service with its own service account, and a Secret Manager secret whose value never touches Terraform.
-Validated in CI (fmt, validate, Checkov, app tests). Not deployed yet.
+Deployed on 2026-11-21. Private service answered with an identity token and `greetingConfigured: true`.
 
 **[06: Workload Identity Federation](06-workload-identity-federation/README.md)**
 GitHub Actions gets short-lived credentials with no stored key. The trust condition pins the repository and the `sub` claim, and the CI identity has only narrow read-only roles.

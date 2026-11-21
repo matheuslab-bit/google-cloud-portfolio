@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Status:** code written and validated in CI (fmt, validate, Checkov and app tests). Not deployed yet.
+**Status:** deployed on 2026-11-21 (stage 1: 7 resources; stage 2: the Cloud Run service; `terraform plan` with no changes afterwards).
 
 Labs 01 to 03 are about infrastructure. This one runs an application: a small status API in Node.js, packaged as a container, stored in Artifact Registry and served by Cloud Run. It also reads a secret from Secret Manager the right way.
 
@@ -80,6 +80,11 @@ npm test
 PORT=8080 node server.js
 ```
 
+## What I learned deploying it
+
+- **`/healthz` is not reachable from outside.** Cloud Run reserves URL paths that end in `z`, so a request to `$URL/healthz` gets a 404 page from Google, not from the app. The startup and liveness probes still work, because they call the container directly. For an external health check, a path like `/health` would be needed.
+- **The Docker build created three versions in the registry.** Recent Docker versions add provenance attachments, so one push stored a tagged image and two untagged entries. The "keep the 5 most recent" rule protects them for now; `docker build --provenance=false` creates a single manifest and keeps the repository clean.
+
 ## Cost
 
 Cloud Run's free tier covers 2 million requests and 180,000 vCPU-seconds a month, and the service scales to zero when idle. Artifact Registry includes 0.5 GB of free storage, and the cleanup rules keep the repository small. Secret Manager has free monthly allowances for active versions and access calls. Free tier limits are shared across the billing account; the budget from [Lab 04](../04-monitoring-alerts/README.md) warns if something grows.
@@ -96,4 +101,4 @@ gcloud secrets delete lab05-app-greeting   # only if the secret was left behind
 - [x] Terraform written, with two-step deploy and opt-in public access
 - [x] App with tests (`npm test`) and Dockerfile with a non-root user
 - [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
-- [ ] Deployed, called with an identity token and secret injection confirmed (`greetingConfigured: true`)
+- [x] Deployed, called with an identity token and secret injection confirmed (`greetingConfigured: true`) on 2026-11-21; without a token the service returns 403

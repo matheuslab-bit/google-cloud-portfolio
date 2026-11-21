@@ -24,7 +24,7 @@ Implantado e alertas disparados num teste em 21/11/2026.
 
 **[05: Aplicação no Cloud Run](05-cloud-run-app/README.pt-BR.md)**
 API de status em Node.js num contêiner, Artifact Registry com regras de limpeza, serviço privado no Cloud Run com conta de serviço própria e um segredo no Secret Manager cujo valor nunca passa pelo Terraform.
-Validado no CI (fmt, validate, Checkov, testes da aplicação). Ainda não implantado.
+Implantado em 21/11/2026. Serviço privado respondeu com token de identidade e `greetingConfigured: true`.
 
 **[06: Workload Identity Federation](06-workload-identity-federation/README.pt-BR.md)**
 O GitHub Actions recebe credenciais de vida curta sem nenhuma chave guardada. A condição de confiança fixa o repositório e o campo `sub`, e a identidade do CI tem só papéis de leitura específicos.

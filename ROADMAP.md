@@ -11,7 +11,7 @@ My study plan for Google Cloud. It is a plan, not a list of things I already mas
 - [x] First GCP project with billing safeguards (budget and alerts deployed and tested in [Lab 04](projects/04-monitoring-alerts/README.md))
 - [x] Compute Engine and VPC: [Lab 01](projects/01-vpc-network/README.md) and [Lab 02](projects/02-secure-compute-engine/README.md)
 - [ ] IAM and security lab (partly covered by Lab 02: dedicated service account, IAP, OS Login)
-- [ ] App deployed on Cloud Run (code ready in [Lab 05](projects/05-cloud-run-app/README.md))
+- [x] App deployed on Cloud Run ([Lab 05](projects/05-cloud-run-app/README.md))
 - [ ] Monitoring and logging lab (code ready in [Lab 04](projects/04-monitoring-alerts/README.md))
 - [x] Terraform project: labs 01 to 03 with remote state in GCS
 - [x] Three documented portfolio projects: [project index](projects/README.md)
@@ -26,11 +26,11 @@ My study plan for Google Cloud. It is a plan, not a list of things I already mas
 - **2026-11-21:** Audit findings fixed (backup first, then the two `default` rules deleted and Editor removed from the default compute service account). The audit now returns 0 alerts.
 - **2026-11-21:** Lab 04 deployed: e-mail channel, three alerts (CPU, VM silent, IAM change) and a R$ 50 monthly budget that subtracts Free Tier but not promotional credits, to keep spending under US$ 10 a month. Enabling the Cloud Resource Manager API was a missing prerequisite (now in the lab README).
 - **2026-11-21:** Lab 06 deployed: Workload Identity Federation pool and provider pinned to this repository and to pull requests, a keyless read-only service account and the `terraform plan` workflow for labs 01 and 02.
+- **2026-11-21:** Lab 05 deployed in two stages: Artifact Registry, secret and service account first, then the `status-api:1.0.0` image and the private Cloud Run service. Without a token it returns 403; with an identity token it returns `greetingConfigured: true`. All six labs are now deployed.
 
 ## Next
 
-1. Deploy Lab 05 (Cloud Run) and tick its checklist.
-2. Cloud NAT for the private VM, then Cloud SQL with private access.
+1. Cloud NAT for the private VM, then Cloud SQL with private access.
 
 ## What I still want to study
 
