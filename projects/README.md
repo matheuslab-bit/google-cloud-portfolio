@@ -28,7 +28,7 @@ Validated in CI (fmt, validate, Checkov, app tests). Not deployed yet.
 
 **[06: Workload Identity Federation](06-workload-identity-federation/README.md)**
 GitHub Actions gets short-lived credentials with no stored key. The trust condition pins the repository and the `sub` claim, and the CI identity has only narrow read-only roles.
-Validated in CI (fmt, validate, Checkov). Not deployed yet.
+Deployed on 2026-11-21. The keyless plan workflow is active in `.github/workflows/terraform-plan.yml`.
 
 ## Notes
 

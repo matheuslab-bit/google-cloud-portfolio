@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Situação:** código escrito e validado no CI (fmt, validate, Checkov). Ainda não implantado.
+**Situação:** implantado em 21/11/2026 (17 recursos, `terraform plan` sem mudanças depois). O workflow está ativo em [`.github/workflows/terraform-plan.yml`](../../.github/workflows/terraform-plan.yml).
 
 Hoje o meu CI só confere a sintaxe, porque não tem acesso à nuvem. O atalho comum é criar uma chave de conta de serviço, colar o JSON num secret do GitHub e esquecer lá por anos. Essa chave é o vazamento clássico. Este lab dá ao GitHub Actions acesso ao Google Cloud sem nenhuma chave guardada: o GitHub prova quem é com um token de vida curta, e o Google troca esse token por credenciais temporárias.
 
@@ -33,7 +33,7 @@ terraform plan contra o projeto real e o state remoto
 | Conta de serviço `github-terraform-plan` | Sem chaves. Só este repositório consegue usá-la |
 | Papéis só de leitura | Compute, contas de serviço, políticas de IAM, APIs ativas, Monitoring, Logging, Cloud Run, Artifact Registry e metadados de segredos |
 | Acesso ao bucket de state | Só aos objetos em `labs/`, necessário para criar e apagar o `.tflock` durante o `plan` |
-| Workflow de exemplo | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), fora de `.github/workflows` até o lab ser implantado |
+| Workflow de exemplo | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), guardado como referência; a cópia ativa está em `.github/workflows/terraform-plan.yml` |
 
 ## Decisões que tomei
 
@@ -79,4 +79,5 @@ Workload Identity Federation, Security Token Service e contas de serviço não t
 - [x] Terraform escrito: pool, provedor com condição fixada, conta de serviço sem chave, papéis restritos e acesso condicional ao bucket
 - [x] Workflow de exemplo pronto para ativar
 - [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
-- [ ] Implantado e `terraform plan` rodando num pull request sem nenhuma chave
+- [x] Implantado em 21/11/2026 e variáveis do repositório criadas
+- [ ] `terraform plan` rodando num pull request sem nenhuma chave

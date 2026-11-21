@@ -28,7 +28,7 @@ Validado no CI (fmt, validate, Checkov, testes da aplicação). Ainda não impla
 
 **[06: Workload Identity Federation](06-workload-identity-federation/README.pt-BR.md)**
 O GitHub Actions recebe credenciais de vida curta sem nenhuma chave guardada. A condição de confiança fixa o repositório e o campo `sub`, e a identidade do CI tem só papéis de leitura específicos.
-Validado no CI (fmt, validate, Checkov). Ainda não implantado.
+Implantado em 21/11/2026. O workflow de plan sem chave está ativo em `.github/workflows/terraform-plan.yml`.
 
 ## Observações
 

@@ -1,0 +1,40 @@
+# Keyless terraform plan on pull requests (Lab 06, deployed on 2026-11-21).
+# GitHub proves who it is with a short-lived OIDC token; Google trades it for temporary credentials
+# of the read-only service account. Repository variables used:
+#   GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT, GCP_PROJECT_ID
+name: Terraform plan (keyless)
+
+on:
+  pull_request:
+    paths:
+      - "projects/**"
+
+permissions:
+  contents: read
+  id-token: write # lets the job ask GitHub for an OIDC token
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: [01-vpc-network, 02-secure-compute-engine]
+    defaults:
+      run:
+        working-directory: projects/${{ matrix.lab }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Authenticate to Google Cloud without a key
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: "1.9.8"
+
+      - run: terraform init -lockfile=readonly -input=false
+      - run: terraform plan -input=false -lock-timeout=60s -var "project_id=${{ vars.GCP_PROJECT_ID }}"

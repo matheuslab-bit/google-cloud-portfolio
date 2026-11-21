@@ -25,12 +25,12 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 - **21/11/2026:** Labs 04 (monitoramento e orçamento), 05 (Cloud Run) e 06 (Workload Identity Federation) escritos e validados no CI. Scripts de auditoria e de custos testados neste projeto; a auditoria achou SSH e RDP abertos na rede `default` e Editor na conta de serviço padrão do Compute.
 - **21/11/2026:** Achados da auditoria corrigidos (primeiro o backup, depois as duas regras da rede `default` apagadas e o Editor removido da conta de serviço padrão do Compute). A auditoria agora termina com 0 alertas.
 - **21/11/2026:** Lab 04 implantado: canal de e-mail, três alertas (CPU, VM em silêncio, mudança de IAM) e um orçamento de R$ 50 por mês que desconta o Free Tier, mas não os créditos promocionais, para manter o gasto abaixo de US$ 10 por mês. Faltava ativar a API Cloud Resource Manager (agora está no README do lab).
+- **21/11/2026:** Lab 06 implantado: pool e provedor de Workload Identity Federation fixados neste repositório e em pull requests, conta de serviço só de leitura sem chave e o workflow de `terraform plan` dos labs 01 e 02.
 
 ## Próximos passos
 
-1. Implantar o Lab 06 e ligar o `terraform plan` sem chave nos pull requests.
-2. Implantar os labs 04 e 05 e marcar os checklists.
-3. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
+1. Implantar o Lab 05 (Cloud Run) e marcar o checklist.
+2. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
 
 ## O que ainda quero estudar
 

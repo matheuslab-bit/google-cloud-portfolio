@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Status:** code written and validated in CI (fmt, validate, Checkov). Not deployed yet.
+**Status:** deployed on 2026-11-21 (17 resources, `terraform plan` with no changes afterwards). The workflow is active in [`.github/workflows/terraform-plan.yml`](../../.github/workflows/terraform-plan.yml).
 
 Today my CI only checks syntax, because it has no access to the cloud. The usual shortcut is to create a service account key, paste the JSON into a GitHub secret and forget it there for years. That key is the classic leak. This lab gives GitHub Actions access to Google Cloud with no stored key at all: GitHub proves who it is with a short-lived token, and Google trades it for temporary credentials.
 
@@ -33,7 +33,7 @@ terraform plan against the real project and the remote state
 | Service account `github-terraform-plan` | No keys. Only this repository can impersonate it |
 | Read-only roles | Compute, service accounts, IAM policies, enabled APIs, Monitoring, Logging, Cloud Run, Artifact Registry and secret metadata |
 | Access to the state bucket | Only objects under `labs/`, needed to create and delete the `.tflock` during `plan` |
-| Example workflow | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), kept out of `.github/workflows` until the lab is deployed |
+| Example workflow | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), kept as reference; the active copy is in `.github/workflows/terraform-plan.yml` |
 
 ## Decisions I made
 
@@ -79,4 +79,5 @@ Workload Identity Federation, the Security Token Service and service accounts ha
 - [x] Terraform written: pool, provider with a pinned condition, keyless service account, narrow roles and conditional bucket access
 - [x] Example workflow ready to enable
 - [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
-- [ ] Deployed and `terraform plan` running in a pull request without any key
+- [x] Deployed on 2026-11-21 and repository variables created
+- [ ] `terraform plan` running in a pull request without any key

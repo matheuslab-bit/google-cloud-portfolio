@@ -15,7 +15,7 @@ Meus labs de infraestrutura Microsoft ficam em [microsoft-infra-labs](https://gi
 ## O que tem aqui
 
 ```text
-projects/   6 labs de Terraform (4 implantados, 2 validados e aguardando implantação)
+projects/   6 labs de Terraform (5 implantados, 1 validado e aguardando implantação)
 scripts/    scripts com gcloud para auditar segurança e achar custos esquecidos
 dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo para a ACE
 ```
@@ -29,7 +29,7 @@ dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo 
 | 03 | [Bucket de state do Terraform](projects/03-terraform-backend/README.pt-BR.md) | Backend GCS protegido, com versionamento, Soft Delete, lock e procedimento de recuperação | **Implantado** em 20/11/2026, guarda o state dos labs 01 e 02 |
 | 04 | [Monitoramento e orçamento](projects/04-monitoring-alerts/README.pt-BR.md) | Alertas de CPU, VM parada e mudança de IAM; orçamento mensal com alerta de previsão | **Implantado** em 21/11/2026, alertas testados |
 | 05 | [Aplicação no Cloud Run](projects/05-cloud-run-app/README.pt-BR.md) | Contêiner no Artifact Registry, serviço privado no Cloud Run, segredo lido do Secret Manager | Validado no CI, ainda não implantado |
-| 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.pt-BR.md) | GitHub Actions acessando o Google Cloud sem chave guardada, com condição de confiança fixada | Validado no CI, ainda não implantado |
+| 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.pt-BR.md) | GitHub Actions acessando o Google Cloud sem chave guardada, com condição de confiança fixada | **Implantado** em 21/11/2026 |
 
 ## Como os labs implantados se encaixam
 
@@ -64,7 +64,7 @@ Quando rodei a auditoria neste projeto, ela achou três configurações que o Go
 - Todo recurso está no Terraform. O provider do Google está fixado na versão `7.46.2` e os lock files estão no Git.
 - Entradas como ID do projeto, faixas CIDR, e-mail e conta de faturamento são validadas antes de qualquer chamada à API.
 - O state fica num bucket GCS com versionamento e lock, um prefixo por lab.
-- O GitHub Actions roda `terraform fmt`, `init -backend=false` e `validate` em cada lab, a análise do Checkov, os testes da aplicação do Cloud Run e o ShellCheck nos scripts. O CI não tem credenciais de nuvem (é isso que o Lab 06 vai mudar, sem chave).
+- O GitHub Actions roda `terraform fmt`, `init -backend=false` e `validate` em cada lab, a análise do Checkov, os testes da aplicação do Cloud Run e o ShellCheck nos scripts. Pull requests que mexem em `projects/` também rodam um `terraform plan` sem chave nos labs 01 e 02 (Lab 06).
 - Quando aceito um alerta do Checkov, escrevo o motivo num comentário `#checkov:skip` ao lado do recurso. Quando o Checkov tem razão, corrijo o código: no Lab 06 ele apontou o papel Viewer, e troquei por papéis de leitura específicos.
 - Sem IP público, SSH só pelo IAP, OS Login, Shielded VM e contas de serviço sem chave e sem papéis no projeto.
 
@@ -88,7 +88,7 @@ Quando rodei a auditoria neste projeto, ela achou três configurações que o Go
 
 ## Próximos passos
 
-- Implantar os labs 04 a 06 e ligar o `terraform plan` nos pull requests sem chave
+- Implantar o Lab 05 (Cloud Run)
 - Cloud NAT, para a VM privada receber atualizações sem IP público
 - Cloud SQL com acesso privado para a aplicação do Cloud Run
 - A certificação Associate Cloud Engineer (ACE)
