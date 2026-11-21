@@ -15,7 +15,7 @@ Meus labs de infraestrutura Microsoft ficam em [microsoft-infra-labs](https://gi
 ## O que tem aqui
 
 ```text
-projects/   6 labs de Terraform (5 implantados, 1 validado e aguardando implantação)
+projects/   6 labs de Terraform, todos implantados
 scripts/    scripts com gcloud para auditar segurança e achar custos esquecidos
 dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo para a ACE
 ```
@@ -28,7 +28,7 @@ dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo 
 | 02 | [VM privada](projects/02-secure-compute-engine/README.pt-BR.md) | VM Debian sem IP público, SSH só pelo IAP com OS Login, Shielded VM, ordem do firewall | **Implantado**, acesso testado em 18/11/2026 |
 | 03 | [Bucket de state do Terraform](projects/03-terraform-backend/README.pt-BR.md) | Backend GCS protegido, com versionamento, Soft Delete, lock e procedimento de recuperação | **Implantado** em 20/11/2026, guarda o state dos labs 01 e 02 |
 | 04 | [Monitoramento e orçamento](projects/04-monitoring-alerts/README.pt-BR.md) | Alertas de CPU, VM parada e mudança de IAM; orçamento mensal com alerta de previsão | **Implantado** em 21/11/2026, alertas testados |
-| 05 | [Aplicação no Cloud Run](projects/05-cloud-run-app/README.pt-BR.md) | Contêiner no Artifact Registry, serviço privado no Cloud Run, segredo lido do Secret Manager | Validado no CI, ainda não implantado |
+| 05 | [Aplicação no Cloud Run](projects/05-cloud-run-app/README.pt-BR.md) | Contêiner no Artifact Registry, serviço privado no Cloud Run, segredo lido do Secret Manager | **Implantado** em 21/11/2026, chamado com token de identidade |
 | 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.pt-BR.md) | GitHub Actions acessando o Google Cloud sem chave guardada, com condição de confiança fixada | **Implantado** em 21/11/2026 |
 
 ## Como os labs implantados se encaixam
@@ -88,7 +88,6 @@ Quando rodei a auditoria neste projeto, ela achou três configurações que o Go
 
 ## Próximos passos
 
-- Implantar o Lab 05 (Cloud Run)
 - Cloud NAT, para a VM privada receber atualizações sem IP público
 - Cloud SQL com acesso privado para a aplicação do Cloud Run
 - A certificação Associate Cloud Engineer (ACE)

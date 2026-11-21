@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Situação:** código escrito e validado no CI (fmt, validate, Checkov e testes da aplicação). Ainda não implantado.
+**Situação:** implantado em 21/11/2026 (etapa 1: 7 recursos; etapa 2: o serviço do Cloud Run; `terraform plan` sem mudanças depois).
 
 Os labs 01 a 03 são de infraestrutura. Este roda uma aplicação: uma API de status pequena em Node.js, empacotada em contêiner, guardada no Artifact Registry e servida pelo Cloud Run. Ela também lê um segredo do Secret Manager do jeito certo.
 
@@ -80,6 +80,11 @@ npm test
 PORT=8080 node server.js
 ```
 
+## O que aprendi na implantação
+
+- **O `/healthz` não responde de fora.** O Cloud Run reserva os caminhos de URL que terminam em `z`, então uma chamada a `$URL/healthz` recebe uma página 404 do Google, não da aplicação. As checagens de inicialização e de vida continuam funcionando, porque chamam o contêiner direto. Para uma checagem externa, seria preciso um caminho como `/health`.
+- **O build do Docker criou três versões no registro.** O Docker recente acrescenta anexos de proveniência, então um único push guardou uma imagem com tag e duas entradas sem tag. A regra "manter as 5 mais recentes" protege essas versões por enquanto; `docker build --provenance=false` gera um só manifesto e deixa o repositório limpo.
+
 ## Custo
 
 O nível gratuito do Cloud Run cobre 2 milhões de requisições e 180 mil vCPU-segundo por mês, e o serviço escala até zero quando não há uso. O Artifact Registry inclui 0,5 GB de armazenamento gratuito, e as regras de limpeza mantêm o repositório pequeno. O Secret Manager tem cotas mensais gratuitas de versões ativas e acessos. As cotas gratuitas são compartilhadas pela conta de faturamento; o orçamento do [Lab 04](../04-monitoring-alerts/README.pt-BR.md) avisa se algo crescer.
@@ -96,4 +101,4 @@ gcloud secrets delete lab05-app-greeting   # só se o segredo tiver ficado para 
 - [x] Terraform escrito, com implantação em duas etapas e acesso público opcional
 - [x] Aplicação com testes (`npm test`) e Dockerfile com usuário sem root
 - [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
-- [ ] Implantado, chamado com token de identidade e injeção do segredo confirmada (`greetingConfigured: true`)
+- [x] Implantado, chamado com token de identidade e injeção do segredo confirmada (`greetingConfigured: true`) em 21/11/2026; sem token o serviço responde 403

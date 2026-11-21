@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Situação:** implantado em 21/11/2026 (9 recursos, `terraform plan` sem mudanças depois). Alertas disparados num teste no mesmo dia; falta conferir a chegada dos e-mails.
+**Situação:** implantado em 21/11/2026 (9 recursos, `terraform plan` sem mudanças depois). Alertas testados no mesmo dia, com os e-mails recebidos.
 
 VM que ninguém monitora só recebe atenção quando o usuário reclama. Este lab cria os alertas que eu gostaria de ter desde o primeiro dia: a VM do Lab 02 com CPU alta ou parada, um alerta de segurança quando alguém muda permissões no IAM e um orçamento mensal que avisa antes de a fatura assustar.
 
@@ -77,4 +77,4 @@ Políticas de alerta, canais de notificação, orçamentos e uma métrica de log
 - [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
 - [x] Implantado em 21/11/2026
 - [x] Alertas disparados em 21/11/2026: IAM (a métrica de log contou 2 chamadas `SetIamPolicy` depois de conceder e remover `roles/viewer`) e VM em silêncio (VM desligada por cerca de 7 minutos, lacuna na métrica de uptime confirmada); orçamento conferido no faturamento
-- [ ] E-mails dos alertas conferidos na caixa de entrada
+- [x] E-mails dos alertas recebidos em 21/11/2026: "SetIamPolicy detected" (teste de IAM e as implantações dos labs 05 e 06), "Uptime metric absent" da `lab02-secure-vm` e as mensagens "Alert recovered" quando cada incidente fechou
