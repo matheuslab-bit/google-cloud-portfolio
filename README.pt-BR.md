@@ -57,7 +57,7 @@ Eu -> IAP (35.235.240.0/20) -> TCP 22 (regra de firewall prioridade 900) -> VM
 - `auditoria-seguranca.sh` procura VMs públicas, regras de firewall abertas para a internet, chaves de conta de serviço criadas por usuário, buckets públicos, papéis básicos em contas de serviço e VMs usando a conta de serviço padrão.
 - `custos-recursos.sh` lista o que continua cobrando sem ninguém usar: discos soltos, IPs estáticos parados, VMs desligadas e snapshots antigos.
 
-Quando rodei a auditoria neste projeto, ela achou três configurações que o Google cria sozinho (SSH e RDP abertos na rede `default` e Editor na conta de serviço padrão do Compute). A história e a correção estão em [`dicas/seguranca.md`](dicas/seguranca.md).
+Quando rodei a auditoria neste projeto, ela achou três configurações que o Google cria sozinho (SSH e RDP abertos na rede `default` e Editor na conta de serviço padrão do Compute). Corrigi as três em 21/11/2026, e a auditoria agora termina com 0 alertas. A história e a correção estão em [`dicas/seguranca.md`](dicas/seguranca.md).
 
 ## Como trabalho neste repositório
 

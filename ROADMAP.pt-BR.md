@@ -23,13 +23,13 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 - **20/11/2026:** Lab 03 (state remoto no GCS) implantado. O state dos labs 01 e 02 foi migrado para o GCS, e o `terraform plan` não mostrou nenhuma mudança.
 - **20/11/2026:** CI unificado num único workflow do Terraform com análise do Checkov. Os riscos aceitos ficaram anotados ao lado de cada recurso.
 - **21/11/2026:** Labs 04 (monitoramento e orçamento), 05 (Cloud Run) e 06 (Workload Identity Federation) escritos e validados no CI. Scripts de auditoria e de custos testados neste projeto; a auditoria achou SSH e RDP abertos na rede `default` e Editor na conta de serviço padrão do Compute.
+- **21/11/2026:** Achados da auditoria corrigidos (primeiro o backup, depois as duas regras da rede `default` apagadas e o Editor removido da conta de serviço padrão do Compute). A auditoria agora termina com 0 alertas.
 
 ## Próximos passos
 
-1. Corrigir os achados da auditoria (regras da rede `default` e papel de Editor da conta de serviço padrão).
-2. Implantar o Lab 06 e ligar o `terraform plan` sem chave nos pull requests.
-3. Implantar os labs 04 e 05 e marcar os checklists.
-4. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
+1. Implantar o Lab 06 e ligar o `terraform plan` sem chave nos pull requests.
+2. Implantar os labs 04 e 05 e marcar os checklists.
+3. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
 
 ## O que ainda quero estudar
 
