@@ -1,17 +1,19 @@
-# Hi, I'm Matheus Silva
+# Google Cloud Portfolio
 
-**IT Infrastructure & Telecommunications Professional | Aspiring Google Cloud Engineer**
+**Matheus Silva · Infrastructure Analyst building Google Cloud engineering skills with Terraform**
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-[![Terraform CI](https://github.com/matheuslab-bit/matheuslab-bit/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/matheuslab-bit/matheuslab-bit/actions/workflows/terraform-ci.yml)
+[![Terraform CI](https://github.com/matheuslab-bit/google-cloud-portfolio/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/matheuslab-bit/google-cloud-portfolio/actions/workflows/terraform-ci.yml)
 ![Terraform](https://img.shields.io/badge/Terraform-%E2%89%A5%201.9.8-7B42BC?logo=terraform&logoColor=white)
 ![Google Cloud](https://img.shields.io/badge/Google%20Cloud-provider%207.46.2-4285F4?logo=googlecloud&logoColor=white)
 ![Checkov](https://img.shields.io/badge/IaC%20security-Checkov-2E7D32)
 
-I work with IT and telecommunications infrastructure, including SIP/VoIP troubleshooting and technical support. My background also includes hands-on experience with Active Directory, VMware, and Hyper-V. I am now building practical Google Cloud engineering skills through reproducible labs, security-first design, Terraform, and documented testing.
+I work with IT and telecommunications infrastructure, including SIP/VoIP troubleshooting and Tier 2 incident handling, with a background in Windows Server, Active Directory, and Hyper-V. This repository is my Google Cloud track: reproducible labs, security-first design, Terraform, and documented testing.
 
-My goal is to move into a **remote cloud engineering or cloud operations role**. This GitHub profile is a learning portfolio, not a claim of production cloud experience.
+> On-premises Microsoft track (Windows Server, AD, GPO, backup, Zabbix, FortiGate): [matheuslab-bit/microsoft-infra-labs](https://github.com/matheuslab-bit/microsoft-infra-labs) · Profile: [github.com/matheuslab-bit](https://github.com/matheuslab-bit)
+
+My goal is to move into a **cloud engineering or cloud operations role**. This is a learning portfolio, not a claim of production cloud experience.
 
 ## Featured Google Cloud labs
 
@@ -76,7 +78,7 @@ flowchart LR
 │   ├── 03-terraform-backend/            # Lab 03 — GCS remote state bucket (bootstrap)
 │   └── archive/                         # Superseded first prototype (reference only)
 ├── ROADMAP.md / ROADMAP.pt-BR.md        # Learning roadmap and progress log
-└── README.md / README.pt-BR.md          # This profile page
+└── README.md / README.pt-BR.md          # This page
 ```
 
 *Historical reference:* the earlier monolithic prototype is preserved in [`projects/archive/gcp-secure-infrastructure/`](projects/archive/gcp-secure-infrastructure/README.md) and was superseded by the modular labs above.
@@ -86,7 +88,7 @@ flowchart LR
 ## Technical focus
 
 - **Demonstrated in published labs:** Google Cloud VPC design, Compute Engine (private Debian 12 VM, Shielded VM), Cloud Storage (Terraform remote state backend, object versioning, Soft Delete, lifecycle rules, state locking), IAM service account isolation, IAP TCP forwarding, OS Login, VPC firewall ordering, Terraform, Git, GitHub Actions, and Checkov
-- **Systems and networking foundation:** Linux, Windows Server/Active Directory, VMware, Hyper-V, TCP/IP, DNS, firewalls, and SIP/VoIP infrastructure troubleshooting
+- **Systems and networking foundation:** Linux, Windows Server/Active Directory, Hyper-V, TCP/IP, DNS, firewalls, and SIP/VoIP infrastructure troubleshooting
 - **Next labs and study:** Workload Identity Federation (keyless CI/CD), Cloud Monitoring and Cloud Logging, Cloud NAT, Cloud Run, Artifact Registry, Cloud SQL, Secret Manager, containers, and the Google Cloud Associate Cloud Engineer (ACE) certification
 
 ## How I document my work

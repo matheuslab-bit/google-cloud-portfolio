@@ -1,17 +1,19 @@
-# Olá, sou Matheus Silva
+# Portfólio Google Cloud
 
-**Profissional de Infraestrutura de TI e Telecomunicações | Em formação para Google Cloud Engineer**
+**Matheus Silva · Analista de Infraestrutura desenvolvendo engenharia de nuvem no Google Cloud com Terraform**
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-[![Terraform CI](https://github.com/matheuslab-bit/matheuslab-bit/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/matheuslab-bit/matheuslab-bit/actions/workflows/terraform-ci.yml)
+[![Terraform CI](https://github.com/matheuslab-bit/google-cloud-portfolio/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/matheuslab-bit/google-cloud-portfolio/actions/workflows/terraform-ci.yml)
 ![Terraform](https://img.shields.io/badge/Terraform-%E2%89%A5%201.9.8-7B42BC?logo=terraform&logoColor=white)
 ![Google Cloud](https://img.shields.io/badge/Google%20Cloud-provider%207.46.2-4285F4?logo=googlecloud&logoColor=white)
 ![Checkov](https://img.shields.io/badge/IaC%20security-Checkov-2E7D32)
 
-Atuo com infraestrutura de TI e telecomunicações, incluindo suporte técnico e análise de falhas SIP/VoIP. Também possuo experiência prática com Active Directory, VMware e Hyper-V. Atualmente, desenvolvo competências em Google Cloud por meio de laboratórios reproduzíveis, práticas de segurança, Terraform e testes documentados.
+Atuo com infraestrutura de TI e telecomunicações, incluindo análise de falhas SIP/VoIP e incidentes N2, com base em Windows Server, Active Directory e Hyper-V. Este repositório é a minha trilha Google Cloud: laboratórios reproduzíveis, segurança desde o desenho, Terraform e testes documentados.
 
-Meu objetivo é conquistar uma oportunidade **remota em engenharia ou operações de nuvem**. Este GitHub é um portfólio de aprendizado, não uma declaração de experiência profissional em nuvem de produção.
+> Trilha Microsoft on-premises (Windows Server, AD, GPO, backup, Zabbix, FortiGate): [matheuslab-bit/microsoft-infra-labs](https://github.com/matheuslab-bit/microsoft-infra-labs) · Perfil: [github.com/matheuslab-bit](https://github.com/matheuslab-bit)
+
+Meu objetivo é atuar em **engenharia ou operações de nuvem**. Este é um portfólio de aprendizado, não uma declaração de experiência profissional em nuvem de produção.
 
 ## Laboratórios Google Cloud em destaque
 
@@ -76,7 +78,7 @@ flowchart LR
 │   ├── 03-terraform-backend/            # Lab 03 — bucket GCS de state remoto (bootstrap)
 │   └── archive/                         # Primeiro protótipo, substituído (apenas referência)
 ├── ROADMAP.md / ROADMAP.pt-BR.md        # Plano de estudos e registro de progresso
-└── README.md / README.pt-BR.md          # Esta página de perfil
+└── README.md / README.pt-BR.md          # Esta página
 ```
 
 *Referência histórica:* o protótipo monolítico inicial permanece preservado em [`projects/archive/gcp-secure-infrastructure/`](projects/archive/gcp-secure-infrastructure/README.md) e foi sucedido pelos laboratórios modulares acima.
@@ -86,7 +88,7 @@ flowchart LR
 ## Foco técnico
 
 - **Demonstrado nos laboratórios publicados:** redes VPC no Google Cloud, Compute Engine (VM privada Debian 12, Shielded VM), Cloud Storage (backend de state remoto do Terraform, versionamento de objetos, Soft Delete, regras de ciclo de vida, state locking), isolamento de contas de serviço IAM, encaminhamento TCP via IAP, OS Login, ordenação de regras de firewall VPC, Terraform, Git, GitHub Actions e Checkov
-- **Base em sistemas e redes:** Linux, Windows Server/Active Directory, VMware, Hyper-V, TCP/IP, DNS, firewalls e diagnóstico de infraestrutura SIP/VoIP
+- **Base em sistemas e redes:** Linux, Windows Server/Active Directory, Hyper-V, TCP/IP, DNS, firewalls e diagnóstico de infraestrutura SIP/VoIP
 - **Próximos laboratórios e estudos:** Workload Identity Federation (CI/CD sem chaves), Cloud Monitoring e Cloud Logging, Cloud NAT, Cloud Run, Artifact Registry, Cloud SQL, Secret Manager, contêineres e certificação Google Cloud Associate Cloud Engineer (ACE)
 
 ## Como documento meu trabalho
