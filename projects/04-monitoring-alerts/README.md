@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Status:** deployed on 2026-11-21 (9 resources, `terraform plan` with no changes afterwards). Alerts triggered in a test the same day; e-mail delivery still to be checked.
+**Status:** deployed on 2026-11-21 (9 resources, `terraform plan` with no changes afterwards). Alerts tested the same day, with the e-mails received.
 
 A VM nobody watches only gets attention when a user complains. This lab adds the alerts I would want on day one: the Lab 02 VM using too much CPU or going silent, a security alert when someone changes IAM permissions, and a monthly budget that warns me before the bill surprises me.
 
@@ -77,4 +77,4 @@ Alert policies, notification channels, budgets and a log-based metric with low v
 - [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
 - [x] Deployed on 2026-11-21
 - [x] Alerts triggered on 2026-11-21: IAM (the log metric counted 2 `SetIamPolicy` calls after granting and removing `roles/viewer`) and VM silent (VM stopped for about 7 minutes, uptime metric gap confirmed); budget checked in Cloud Billing
-- [ ] Alert e-mails checked in the inbox
+- [x] Alert e-mails received on 2026-11-21: "SetIamPolicy detected" (IAM test and the Lab 05 and 06 deployments), "Uptime metric absent" for `lab02-secure-vm`, and the "Alert recovered" messages when each incident closed
