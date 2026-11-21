@@ -81,4 +81,4 @@ Workload Identity Federation, the Security Token Service and service accounts ha
 - [x] Example workflow ready to enable
 - [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
 - [x] Deployed on 2026-11-21 and repository variables created
-- [ ] `terraform plan` running in a pull request without any key
+- [x] `terraform plan` running in a pull request without any key: PR #5, `No changes` in labs 01 and 02 (2026-11-21)
