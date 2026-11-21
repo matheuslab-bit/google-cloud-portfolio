@@ -6,10 +6,12 @@ on:
       - "main"
     paths:
       - "projects/**"
+      - "scripts/**"
       - ".github/workflows/terraform-ci.yml"
   pull_request:
     paths:
       - "projects/**"
+      - "scripts/**"
       - ".github/workflows/terraform-ci.yml"
   workflow_dispatch:
 
@@ -32,6 +34,9 @@ jobs:
           - 01-vpc-network
           - 02-secure-compute-engine
           - 03-terraform-backend
+          - 04-monitoring-alerts
+          - 05-cloud-run-app
+          - 06-workload-identity-federation
     defaults:
       run:
         working-directory: projects/${{ matrix.lab }}
@@ -80,3 +85,30 @@ jobs:
           --compact
           --quiet
           --skip-download
+
+  app-test:
+    name: Test Cloud Run app (Lab 05)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: projects/05-cloud-run-app/app
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Run node --test
+        run: |
+          node --version
+          npm test
+
+  shellcheck:
+    name: ShellCheck (scripts)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: shellcheck
+        run: shellcheck scripts/*.sh

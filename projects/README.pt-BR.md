@@ -18,9 +18,22 @@ Configuração de Iowa integrada no [PR #4](https://github.com/matheuslab-bit/ma
 Bucket do Cloud Storage em Iowa (`us-central1`) com versionamento de objetos, Soft Delete de 7 dias, regra de 90 dias para versões antigas, acesso uniforme, acesso público bloqueado e proteção contra exclusão.
 Implantado em 20/11/2026 ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit/pull/9)). Guarda o state atual dos labs 01 e 02.
 
+**[04: Monitoramento, alertas e orçamento](04-monitoring-alerts/README.pt-BR.md)**
+Canal de e-mail, alertas de CPU acima de 80%, VM em silêncio por 5 minutos e qualquer mudança de política de IAM (a partir dos logs de auditoria gratuitos), mais um orçamento mensal com alerta de previsão.
+Validado no CI (fmt, validate, Checkov). Ainda não implantado.
+
+**[05: Aplicação no Cloud Run](05-cloud-run-app/README.pt-BR.md)**
+API de status em Node.js num contêiner, Artifact Registry com regras de limpeza, serviço privado no Cloud Run com conta de serviço própria e um segredo no Secret Manager cujo valor nunca passa pelo Terraform.
+Validado no CI (fmt, validate, Checkov, testes da aplicação). Ainda não implantado.
+
+**[06: Workload Identity Federation](06-workload-identity-federation/README.pt-BR.md)**
+O GitHub Actions recebe credenciais de vida curta sem nenhuma chave guardada. A condição de confiança fixa o repositório e o campo `sub`, e a identidade do CI tem só papéis de leitura específicos.
+Validado no CI (fmt, validate, Checkov). Ainda não implantado.
+
 ## Observações
 
 - O Lab 02 lê a `portfolio-vpc` do Lab 01 por um data source e cuida só da própria sub-rede em Iowa.
+- Os labs 04 a 06 são independentes entre si e dos labs 01 a 03, e vão usar prefixos próprios no mesmo bucket.
 - Os labs 01 e 02 guardam o state no bucket do Lab 03, cada um no seu prefixo, com lock. O Lab 03 mantém o próprio state local (mais um backup separado, fora do repositório), porque um bucket não consegue guardar o próprio state com segurança.
 - Custo: a VM `e2-micro`, o disco `pd-standard` de 10 GB e o bucket (cerca de 24 KB de state) cabem no nível gratuito mensal. Cotas compartilhadas, tráfego de saída e outros serviços ainda podem gerar cobrança.
 
@@ -30,8 +43,9 @@ Implantado em 20/11/2026 ([PR #9](https://github.com/matheuslab-bit/matheuslab-b
 
 ## Planejado
 
-- Aplicação no Cloud Run com Artifact Registry, Cloud SQL, Secret Manager e monitoramento
-- Workload Identity Federation (CI sem chave) e módulos reutilizáveis de Terraform
+- Cloud NAT para saída controlada da VM privada
+- Cloud SQL com acesso privado para a aplicação do Cloud Run
+- Módulos reutilizáveis de Terraform
 
 O que está planejado só entra na lista acima quando existir.
 

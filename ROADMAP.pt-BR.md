@@ -8,11 +8,11 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 
 - [ ] Fundamentos de nuvem e redes
 - [ ] Lab de fundamentos de Linux
-- [ ] Primeiro projeto no GCP com proteções de cobrança (alertas de orçamento ainda por documentar)
+- [ ] Primeiro projeto no GCP com proteções de cobrança (orçamento e alertas escritos no [Lab 04](projects/04-monitoring-alerts/README.pt-BR.md), aguardando implantação)
 - [x] Compute Engine e VPC: [Lab 01](projects/01-vpc-network/README.pt-BR.md) e [Lab 02](projects/02-secure-compute-engine/README.pt-BR.md)
 - [ ] Lab de IAM e segurança (parte já coberta no Lab 02: conta de serviço dedicada, IAP, OS Login)
-- [ ] Aplicação publicada no Cloud Run
-- [ ] Lab de monitoramento e logs
+- [ ] Aplicação publicada no Cloud Run (código pronto no [Lab 05](projects/05-cloud-run-app/README.pt-BR.md))
+- [ ] Lab de monitoramento e logs (código pronto no [Lab 04](projects/04-monitoring-alerts/README.pt-BR.md))
 - [x] Projeto com Terraform: labs 01 a 03 com state remoto no GCS
 - [x] Três projetos documentados no portfólio: [índice de projetos](projects/README.pt-BR.md)
 - [ ] Preparação para a prova Associate Cloud Engineer
@@ -22,12 +22,14 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 - **18/11/2026:** Lab 01 (VPC) e Lab 02 (VM privada com IAP e OS Login) integrados com o CI aprovado. Lab 02 implantado em Iowa e acesso SSH testado.
 - **20/11/2026:** Lab 03 (state remoto no GCS) implantado. O state dos labs 01 e 02 foi migrado para o GCS, e o `terraform plan` não mostrou nenhuma mudança.
 - **20/11/2026:** CI unificado num único workflow do Terraform com análise do Checkov. Os riscos aceitos ficaram anotados ao lado de cada recurso.
+- **21/11/2026:** Labs 04 (monitoramento e orçamento), 05 (Cloud Run) e 06 (Workload Identity Federation) escritos e validados no CI. Scripts de auditoria e de custos testados neste projeto; a auditoria achou SSH e RDP abertos na rede `default` e Editor na conta de serviço padrão do Compute.
 
 ## Próximos passos
 
-1. Workload Identity Federation, para o GitHub Actions se autenticar sem chave e rodar `terraform plan`.
-2. Lab de monitoramento e logs: Cloud Monitoring, Cloud Logging, VPC Flow Logs e alertas de orçamento.
-3. Aplicação no Cloud Run com Artifact Registry e Secret Manager.
+1. Corrigir os achados da auditoria (regras da rede `default` e papel de Editor da conta de serviço padrão).
+2. Implantar o Lab 06 e ligar o `terraform plan` sem chave nos pull requests.
+3. Implantar os labs 04 e 05 e marcar os checklists.
+4. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
 
 ## O que ainda quero estudar
 

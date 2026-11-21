@@ -1,0 +1,40 @@
+# Example workflow, kept here (not in .github/workflows) until Lab 06 is deployed.
+# After "terraform apply", copy it to .github/workflows/ and set the two repository variables:
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  -> output workload_identity_provider
+#   GCP_SERVICE_ACCOUNT             -> output service_account
+name: Terraform plan (keyless)
+
+on:
+  pull_request:
+    paths:
+      - "projects/**"
+
+permissions:
+  contents: read
+  id-token: write # lets the job ask GitHub for an OIDC token
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: [01-vpc-network, 02-secure-compute-engine]
+    defaults:
+      run:
+        working-directory: projects/${{ matrix.lab }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Authenticate to Google Cloud without a key
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: "1.9.8"
+
+      - run: terraform init -lockfile=readonly -input=false
+      - run: terraform plan -input=false -lock-timeout=60s -var "project_id=${{ vars.GCP_PROJECT_ID }}"
