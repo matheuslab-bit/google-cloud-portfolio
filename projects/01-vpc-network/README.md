@@ -1,78 +1,57 @@
-# Lab 01 — VPC Networking on Google Cloud
+# Lab 01 - VPC network
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Status: deployed in São Paulo (`southamerica-east1`) and remote Terraform state migrated to Google Cloud Storage (`labs/01-vpc-network`) on November 20, 2026.**
+**Status:** deployed in São Paulo (`southamerica-east1`). Terraform state moved to Cloud Storage (`labs/01-vpc-network`) on 2026-11-20.
 
-Terraform configuration for a custom-mode Virtual Private Cloud (VPC) network and a regional subnet on Google Cloud. This lab is independent of the archived prototype [`../archive/gcp-secure-infrastructure/`](../archive/gcp-secure-infrastructure/README.md) and stores its remote state in the hardened GCS bucket provisioned by [Lab 03](../03-terraform-backend/README.md).
+The base network for the other labs: a custom-mode VPC with one regional subnet. Its state is stored in the bucket from [Lab 03](../03-terraform-backend/README.md).
 
-## Objective
+## What it creates
 
-Design, deploy, and govern a foundational Google Cloud network using Terraform, disabling automatic subnet creation to enforce explicit CIDR planning, regional routing, and isolated remote state management with native GCS state locking.
+- **VPC `portfolio-vpc`** with `auto_create_subnetworks = false` and `routing_mode = "REGIONAL"`.
+- **Subnet `portfolio-subnet`**, `10.10.0.0/24`, in São Paulo.
+- **Remote state** (`backend.tf`) in the bucket `gcp-portfolio-tfstate-usc1-7f4e9a2c` (`us-central1`), prefix `labs/01-vpc-network`, with versioning, 7-day Soft Delete and locking.
 
-## Architecture
+I turned off automatic subnets on purpose. In auto mode Google creates a subnet in every region with ranges it picks. In custom mode, every range in the network is one I planned.
 
-- **Custom-mode VPC:** `portfolio-vpc` (`auto_create_subnetworks = false`, `routing_mode = "REGIONAL"`).
-- **Regional subnet:** `portfolio-subnet` with IPv4 CIDR `10.10.0.0/24` in São Paulo (`southamerica-east1`).
-- **Remote State Backend (`backend.tf`):** GCS bucket `gcp-portfolio-tfstate-usc1-7f4e9a2c` (`us-central1`) under prefix `labs/01-vpc-network`, protected by object versioning, 7-day Soft Delete, and `.tflock` distributed locking.
+[Lab 02](../02-secure-compute-engine/README.md) reuses this VPC: it reads it through a data source and adds its own subnet in Iowa.
 
-```mermaid
-flowchart LR
-    TF01["Lab 01 Terraform"] -->|"Backend gcs"| GCS["Lab 03 GCS Bucket (us-central1)<br/>labs/01-vpc-network/default.tfstate"]
-    TF01 -->|"Manages"| VPC["Custom VPC: portfolio-vpc<br/>auto_create_subnetworks = false<br/>routing_mode = REGIONAL"]
-    Project["Google Cloud project"] --> VPC
-    VPC --> Subnet["São Paulo subnet: portfolio-subnet<br/>southamerica-east1<br/>10.10.0.0/24"]
-    Lab02["Lab 02: Iowa subnet & VM"] -.->|"Reads existing VPC via data source"| VPC
-```
+## Inputs and outputs
 
-### Inputs (`variables.tf`) and Outputs (`outputs.tf`)
+| Variable | What it is | Default |
+| --- | --- | --- |
+| `project_id` | Google Cloud project ID | required |
+| `region` | Subnet region | `southamerica-east1` |
+| `network_name` | VPC name | `portfolio-vpc` |
+| `subnet_name` | Subnet name | `portfolio-subnet` |
+| `subnet_cidr` | Subnet range | `10.10.0.0/24` |
 
-| Type | Name | Description | Default / Value |
-| --- | --- | --- | --- |
-| Variable | `project_id` | Target Google Cloud project ID | *(required)* |
-| Variable | `region` | Region where subnet resources are created | `southamerica-east1` |
-| Variable | `network_name` | Name of the custom VPC network | `portfolio-vpc` |
-| Variable | `subnet_name` | Name of the regional subnet | `portfolio-subnet` |
-| Variable | `subnet_cidr` | IPv4 CIDR range for the subnet | `10.10.0.0/24` |
-| Output | `vpc_name` | Name of the VPC network | `google_compute_network.portfolio_vpc.name` |
-| Output | `vpc_id` | Identifier of the VPC network | `google_compute_network.portfolio_vpc.id` |
-| Output | `subnet_name` | Name of the subnet | `google_compute_subnetwork.portfolio_subnet.name` |
-| Output | `subnet_cidr` | IPv4 CIDR range of the subnet | `google_compute_subnetwork.portfolio_subnet.ip_cidr_range` |
-| Output | `subnet_region` | Region of the subnet | `google_compute_subnetwork.portfolio_subnet.region` |
+Outputs: `vpc_name`, `vpc_id`, `subnet_name`, `subnet_cidr` and `subnet_region`.
 
-## Deployment and Remote State Status
+`project_id` must be a valid project ID and `subnet_cidr` must be a valid IPv4 range, otherwise Terraform stops before calling the API. Versions are in [`versions.tf`](versions.tf): Google provider `7.46.2`, the same as in `.terraform.lock.hcl`.
 
-- **Cloud deployment:** `portfolio-vpc` and `portfolio-subnet` (`10.10.0.0/24` in `southamerica-east1`) are deployed and active in Google Cloud. The global `portfolio-vpc` network is also referenced via data source by [Lab 02](../02-secure-compute-engine/README.md) for its Iowa subnet.
-- **Backend configuration and state migration (November 20, 2026):** `backend.tf` was added and versioned in [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10), while the effective state migration from local disk to `gs://gcp-portfolio-tfstate-usc1-7f4e9a2c/labs/01-vpc-network/default.tfstate` was executed locally with `terraform init -migrate-state` on November 20, 2026. Post-migration verification with `terraform state list`, `terraform plan` (`No changes. Your infrastructure matches the configuration.`), and `gcloud compute` confirmed zero drift and active object versioning.
+## What I verified
 
-## Validation and GitHub Actions Evidence
+- `portfolio-vpc` and `portfolio-subnet` are deployed and active.
+- `backend.tf` was added in [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10). On 2026-11-20 I moved the state from my disk to `gs://gcp-portfolio-tfstate-usc1-7f4e9a2c/labs/01-vpc-network/default.tfstate` with `terraform init -migrate-state`. After that, `terraform state list`, `terraform plan` (`No changes. Your infrastructure matches the configuration.`) and `gcloud compute` showed no drift, and object versioning was on.
+- Locally, `terraform fmt -check -recursive`, `terraform validate` and `terraform plan` passed with Terraform `1.17.2`.
+- In GitHub Actions, [`terraform-ci.yml`](../../.github/workflows/terraform-ci.yml) validates the lab with Terraform `1.9.8` (the oldest version I support) and runs Checkov. CI uses `-backend=false`, so it needs no cloud credentials.
 
-Local formatting (`terraform fmt -check -recursive`), `terraform validate`, and `terraform plan` (with GCS state locking) passed using Terraform `1.17.2` and Google provider `7.46.2`.
+## Checkov findings I accepted
 
-In GitHub Actions, the shared [`terraform-ci.yml`](../../.github/workflows/terraform-ci.yml) workflow validates this lab on `ubuntu-latest` with Terraform `1.9.8` (the minimum supported version) and runs a Checkov security scan. CI uses `-backend=false` to perform static syntax and schema validation without cloud credentials.
+Each one is explained in a `#checkov:skip` comment in [`main.tf`](main.tf):
 
-## Security Scan and Accepted Risks
-
-Checkov findings for this lab are recorded as accepted risks with inline `#checkov:skip` comments in [`main.tf`](main.tf):
-
-| Check | Decision |
+| Check | Why |
 | --- | --- |
-| `CKV_GCP_26` — VPC Flow Logs | Deferred to the planned monitoring lab to avoid log ingestion costs. |
-| `CKV_GCP_74` — Private Google Access | No workloads run in the São Paulo subnet yet; enable it when a workload needs Google APIs. |
-| `CKV2_GCP_18` — Network firewall | Firewall rules are owned by each workload lab (Lab 02 defines its IAP allow/deny rules). |
+| `CKV_GCP_26`, VPC Flow Logs | Left for the monitoring lab, to avoid log costs for now. |
+| `CKV_GCP_74`, Private Google Access | Nothing runs in the São Paulo subnet yet. I will turn it on when a workload needs Google APIs. |
+| `CKV2_GCP_18`, network firewall | Firewall rules belong to each workload lab. Lab 02 has its own IAP allow/deny rules. |
 
-## Prerequisites
+## How to run
 
-- Terraform `>= 1.9.8, < 2.0.0` (CI uses `1.9.8`).
-- A Google Cloud project with billing and the Compute Engine API enabled.
-- Access to the remote state bucket (`roles/storage.objectAdmin` on the bucket) and permissions to manage VPC networks when running `plan` or `apply` against the live backend.
-- Google Cloud CLI (`gcloud`) for local Application Default Credentials authentication.
+You need Terraform `>= 1.9.8, < 2.0.0`, a project with billing and the Compute Engine API on, access to the state bucket (`roles/storage.objectAdmin` on the bucket), permission to manage VPCs and the `gcloud` CLI.
 
-Versions are declared in [`versions.tf`](versions.tf): Google provider pinned to `7.46.2`, matching `.terraform.lock.hcl`. Inputs are validated (`project_id` format and `subnet_cidr` as a valid IPv4 CIDR range).
-
-## Validate Without Cloud Credentials
-
-Run from `projects/01-vpc-network/` in a clean environment or CI runner:
+Check the code without any credentials, from `projects/01-vpc-network/`:
 
 ```powershell
 terraform fmt -check -recursive
@@ -80,9 +59,7 @@ terraform init -backend=false -lockfile=readonly -input=false
 terraform validate
 ```
 
-## Working with the Live GCS Backend
-
-When authenticated to the project and state bucket:
+Against the real backend:
 
 ```powershell
 gcloud auth application-default login
@@ -90,18 +67,18 @@ terraform init -lockfile=readonly
 terraform plan
 ```
 
-The `project_id` variable is supplied locally via an untracked `terraform.tfvars` file (or `-var="project_id=YOUR_PROJECT_ID"`). Never store credentials in Terraform files.
+`project_id` goes in a local `terraform.tfvars` that is not committed (or `-var="project_id=YOUR_PROJECT_ID"`). Never put credentials in Terraform files.
 
-## Cost and Cleanup Precautions
+## Cost and cautions
 
-VPC networks and regional subnets without external IPs, Cloud NAT, or VPNs/Interconnects do not incur fixed hourly charges, though network egress and associated workloads can incur charges.
+A VPC and subnets with no external IPs, Cloud NAT or VPN have no fixed hourly cost. Network egress and whatever runs inside can cost money.
 
-Because [Lab 02](../02-secure-compute-engine/README.md) depends on `portfolio-vpc`, **do not run `terraform destroy` on Lab 01** while Lab 02 resources exist. Keep `.terraform/`, local state backups, saved plans, credentials, and `*.tfvars` out of Git.
+Lab 02 depends on `portfolio-vpc`, so **do not run `terraform destroy` here** while Lab 02 exists. Keep `.terraform/`, local state backups, saved plans, credentials and `*.tfvars` out of Git.
 
-## Progress Checklist
+## Checklist
 
-- [x] Terraform configuration imported and documented (`versions.tf`, `main.tf`, `variables.tf`, `outputs.tf`, `backend.tf`)
-- [x] Local formatting (`terraform fmt -check`) and `terraform validate` passed
-- [x] GitHub Actions CI validation (`push` and `pull_request`) passed
-- [x] Cloud deployment in São Paulo (`portfolio-vpc` and `portfolio-subnet`, `10.10.0.0/24`) verified via `gcloud compute` and `terraform plan` (`No changes`)
-- [x] GCS backend configuration versioned ([PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10)) and state migrated locally via `terraform init -migrate-state` (`labs/01-vpc-network`) with state locking and object versioning verified
+- [x] Terraform files written and documented (`versions.tf`, `main.tf`, `variables.tf`, `outputs.tf`, `backend.tf`)
+- [x] `terraform fmt -check` and `terraform validate` passed locally
+- [x] CI passed in GitHub Actions (`push` and `pull_request`)
+- [x] Deployed in São Paulo (`portfolio-vpc` and `portfolio-subnet`, `10.10.0.0/24`), checked with `gcloud compute` and `terraform plan` (`No changes`)
+- [x] `backend.tf` added ([PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10)) and state moved to GCS (`labs/01-vpc-network`) with locking and versioning checked

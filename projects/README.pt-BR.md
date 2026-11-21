@@ -1,39 +1,38 @@
-# Projetos do Portfólio Google Cloud
+# Projetos
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-Esta pasta reúne laboratórios reproduzíveis de estudo em Google Cloud. O status de cada projeto distingue **validação de código**, **implantação na nuvem** e **acesso testado**.
+Meus labs de Google Cloud. Em cada um, anoto separadamente o que passou na validação do código, o que está implantado e o que eu testei.
 
-## Laboratórios publicados
+## Labs
 
-| Projeto | Escopo | Progresso verificado |
-| --- | --- | --- |
-| [01 — Redes VPC](01-vpc-network/README.pt-BR.md) | VPC em modo personalizado (`portfolio-vpc`) e sub-rede regional (`10.10.0.0/24`) em São Paulo (`southamerica-east1`) | Implantado em São Paulo; CI do Terraform aprovado ([PR #1](https://github.com/matheuslab-bit/matheuslab-bit/pull/1)), estado migrado localmente para o GCS (`labs/01-vpc-network`) com `terraform init -migrate-state` em 20 de novembro de 2026 (`No changes` verificado) e `backend.tf` versionado no [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10). |
-| [02 — Compute Engine seguro](02-secure-compute-engine/README.pt-BR.md) | VM Debian 12 `e2-micro` privada em Iowa (`us-central1-a`); sub-rede dedicada (`10.20.0.0/24`), SSH por IAP, OS Login, Shielded VM e firewall `900`/`901` | Configuração para Iowa integrada no [PR #4](https://github.com/matheuslab-bit/matheuslab-bit/pull/4); após o merge, implantado em Iowa e SSH por IAP/OS Login validado em 18 de novembro de 2026. Estado migrado localmente para o GCS (`labs/02-secure-compute-engine`) com `terraform init -migrate-state` em 20 de novembro de 2026 (`No changes` verificado) e `backend.tf` versionado no [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10). |
-| [03 — Terraform Remote State (GCS)](03-terraform-backend/README.pt-BR.md) | Bucket Cloud Storage dedicado em Iowa (`us-central1`) com versionamento de objetos, Soft Delete de 7 dias, ciclo de vida de 90 dias, acesso uniforme, prevenção de acesso público e proteções contra exclusão | Implantado em Iowa em 20 de novembro de 2026 ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit/pull/9)); armazena os objetos ativos de estado remoto do Terraform dos Labs 01 e 02 e utiliza objetos temporários `.tflock` durante operações com state locking. |
+**[01: Rede VPC](01-vpc-network/README.pt-BR.md)**
+VPC em modo personalizado (`portfolio-vpc`) e uma sub-rede (`10.10.0.0/24`) em São Paulo (`southamerica-east1`).
+Implantado. CI aprovado no [PR #1](https://github.com/matheuslab-bit/matheuslab-bit/pull/1). State migrado para o GCS em 20/11/2026 sem nenhuma mudança no `terraform plan`, e `backend.tf` adicionado no [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10).
 
-**Arquitetura e estado:** O Lab 02 consulta a VPC `portfolio-vpc` do Lab 01 via data source e gerencia sua própria sub-rede em Iowa. Tanto o Lab 01 quanto o Lab 02 utilizam o backend remoto GCS criado no Lab 03 com prefixos isolados (`labs/01-vpc-network` e `labs/02-secure-compute-engine`) e bloqueio nativo de estado (*state locking*). O Lab 03 mantém seu próprio estado de bootstrap local (com cópia de backup local fora do repositório) para evitar dependência circular de backend.
+**[02: VM privada](02-secure-compute-engine/README.pt-BR.md)**
+Debian 12 `e2-micro` em Iowa (`us-central1-a`) com sub-rede própria (`10.20.0.0/24`), SSH só pelo IAP, OS Login, Shielded VM e regras de firewall com prioridade `900`/`901`.
+Configuração de Iowa integrada no [PR #4](https://github.com/matheuslab-bit/matheuslab-bit/pull/4). Implantado e SSH pelo IAP testado em 18/11/2026. State migrado para o GCS em 20/11/2026 sem mudanças, `backend.tf` no [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10).
 
-**Custos:** A máquina `e2-micro` em Iowa, o disco `pd-standard` de 10 GB e o bucket Standard Storage em `us-central1` (~24 KB de estados) estão dimensionados dentro das franquias mensais do Free Tier do Google Cloud. Cotas compartilhadas da conta de faturamento, tráfego de saída e outros serviços ainda podem gerar cobranças.
+**[03: Bucket de state do Terraform](03-terraform-backend/README.pt-BR.md)**
+Bucket do Cloud Storage em Iowa (`us-central1`) com versionamento de objetos, Soft Delete de 7 dias, regra de 90 dias para versões antigas, acesso uniforme, acesso público bloqueado e proteção contra exclusão.
+Implantado em 20/11/2026 ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit/pull/9)). Guarda o state atual dos labs 01 e 02.
 
-## Protótipo arquivado
+## Observações
 
-- [GCP Secure Infrastructure (arquivado)](archive/gcp-secure-infrastructure/README.md) — protótipo monolítico inicial em Terraform cobrindo computação privada, segurança e monitoramento. Foi sucedido pelos projetos modulares **Lab 01**, **Lab 02** e **Lab 03** acima e permanece preservado em `projects/archive/` para reaproveitamento futuro de suas ideias de observabilidade.
+- O Lab 02 lê a `portfolio-vpc` do Lab 01 por um data source e cuida só da própria sub-rede em Iowa.
+- Os labs 01 e 02 guardam o state no bucket do Lab 03, cada um no seu prefixo, com lock. O Lab 03 mantém o próprio state local (mais um backup separado, fora do repositório), porque um bucket não consegue guardar o próprio state com segurança.
+- Custo: a VM `e2-micro`, o disco `pd-standard` de 10 GB e o bucket (cerca de 24 KB de state) cabem no nível gratuito mensal. Cotas compartilhadas, tráfego de saída e outros serviços ainda podem gerar cobrança.
 
-## Próximos projetos planejados
+## Arquivo
 
-- **Aplicação no Google Cloud:** Cloud Run, Artifact Registry, Cloud SQL, Secret Manager e observabilidade.
-- **Automação de infraestrutura:** Workload Identity Federation (CI/CD sem chaves) e módulos Terraform reutilizáveis.
+[GCP Secure Infrastructure (arquivado)](archive/gcp-secure-infrastructure/README.md): minha primeira tentativa, um Terraform grande com computação, segurança e monitoramento juntos. Troquei pelos labs 01 a 03 e mantive pelas ideias de monitoramento.
 
-Trabalhos ainda planejados não são apresentados como laboratórios concluídos.
+## Planejado
 
-## Lista de qualidade dos projetos
+- Aplicação no Cloud Run com Artifact Registry, Cloud SQL, Secret Manager e monitoramento
+- Workload Identity Federation (CI sem chave) e módulos reutilizáveis de Terraform
 
-- [x] Versionar código e documentar a arquitetura.
-- [x] Usar validação Terraform e testes automatizados quando aplicável ([`terraform-ci.yml`](../.github/workflows/terraform-ci.yml)).
-- [x] Analisar o Terraform com Checkov e documentar cada risco aceito no próprio código.
-- [x] Gerenciar os estados dos laboratórios remotamente em bucket GCS versionado e com state locking.
-- [x] Registrar decisões de segurança e cuidados com custos.
-- [ ] Publicar uma aplicação na nuvem testada com instruções reproduzíveis.
+O que está planejado só entra na lista acima quando existir.
 
-Não publicar segredos, estados Terraform, credenciais ou tokens de acesso. Este é um **portfólio de estudos**, não um catálogo de serviços em produção.
+Nunca coloque segredos, state do Terraform ou credenciais no Git. Este é um portfólio de estudo, não um serviço de produção.
