@@ -15,7 +15,7 @@ Meus labs de infraestrutura Microsoft ficam em [microsoft-infra-labs](https://gi
 ## O que tem aqui
 
 ```text
-projects/   6 labs de Terraform (3 implantados, 3 validados e aguardando implantação)
+projects/   6 labs de Terraform (4 implantados, 2 validados e aguardando implantação)
 scripts/    scripts com gcloud para auditar segurança e achar custos esquecidos
 dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo para a ACE
 ```
@@ -27,7 +27,7 @@ dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo 
 | 01 | [Rede VPC](projects/01-vpc-network/README.pt-BR.md) | VPC em modo personalizado com uma sub-rede planejada em São Paulo | **Implantado** |
 | 02 | [VM privada](projects/02-secure-compute-engine/README.pt-BR.md) | VM Debian sem IP público, SSH só pelo IAP com OS Login, Shielded VM, ordem do firewall | **Implantado**, acesso testado em 18/11/2026 |
 | 03 | [Bucket de state do Terraform](projects/03-terraform-backend/README.pt-BR.md) | Backend GCS protegido, com versionamento, Soft Delete, lock e procedimento de recuperação | **Implantado** em 20/11/2026, guarda o state dos labs 01 e 02 |
-| 04 | [Monitoramento e orçamento](projects/04-monitoring-alerts/README.pt-BR.md) | Alertas de CPU, VM parada e mudança de IAM; orçamento mensal com alerta de previsão | Validado no CI, ainda não implantado |
+| 04 | [Monitoramento e orçamento](projects/04-monitoring-alerts/README.pt-BR.md) | Alertas de CPU, VM parada e mudança de IAM; orçamento mensal com alerta de previsão | **Implantado** em 21/11/2026, alertas testados |
 | 05 | [Aplicação no Cloud Run](projects/05-cloud-run-app/README.pt-BR.md) | Contêiner no Artifact Registry, serviço privado no Cloud Run, segredo lido do Secret Manager | Validado no CI, ainda não implantado |
 | 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.pt-BR.md) | GitHub Actions acessando o Google Cloud sem chave guardada, com condição de confiança fixada | Validado no CI, ainda não implantado |
 

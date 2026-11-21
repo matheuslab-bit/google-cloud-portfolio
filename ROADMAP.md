@@ -8,7 +8,7 @@ My study plan for Google Cloud. It is a plan, not a list of things I already mas
 
 - [ ] Cloud and networking foundations
 - [ ] Linux fundamentals lab
-- [ ] First GCP project with billing safeguards (budget and alerts written in [Lab 04](projects/04-monitoring-alerts/README.md), waiting to deploy)
+- [x] First GCP project with billing safeguards (budget and alerts deployed and tested in [Lab 04](projects/04-monitoring-alerts/README.md))
 - [x] Compute Engine and VPC: [Lab 01](projects/01-vpc-network/README.md) and [Lab 02](projects/02-secure-compute-engine/README.md)
 - [ ] IAM and security lab (partly covered by Lab 02: dedicated service account, IAP, OS Login)
 - [ ] App deployed on Cloud Run (code ready in [Lab 05](projects/05-cloud-run-app/README.md))
@@ -24,6 +24,7 @@ My study plan for Google Cloud. It is a plan, not a list of things I already mas
 - **2026-11-20:** CI merged into a single Terraform workflow with a Checkov scan. Accepted risks written next to each resource.
 - **2026-11-21:** Labs 04 (monitoring and budget), 05 (Cloud Run) and 06 (Workload Identity Federation) written and validated in CI. Audit and cost scripts tested on this project; the audit found SSH and RDP open on the `default` network and Editor on the default compute service account.
 - **2026-11-21:** Audit findings fixed (backup first, then the two `default` rules deleted and Editor removed from the default compute service account). The audit now returns 0 alerts.
+- **2026-11-21:** Lab 04 deployed: e-mail channel, three alerts (CPU, VM silent, IAM change) and a R$ 50 monthly budget that subtracts Free Tier but not promotional credits, to keep spending under US$ 10 a month. Enabling the Cloud Resource Manager API was a missing prerequisite (now in the lab README).
 
 ## Next
 

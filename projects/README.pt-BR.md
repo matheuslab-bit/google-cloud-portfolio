@@ -20,7 +20,7 @@ Implantado em 20/11/2026 ([PR #9](https://github.com/matheuslab-bit/matheuslab-b
 
 **[04: Monitoramento, alertas e orçamento](04-monitoring-alerts/README.pt-BR.md)**
 Canal de e-mail, alertas de CPU acima de 80%, VM em silêncio por 5 minutos e qualquer mudança de política de IAM (a partir dos logs de auditoria gratuitos), mais um orçamento mensal com alerta de previsão.
-Validado no CI (fmt, validate, Checkov). Ainda não implantado.
+Implantado e alertas disparados num teste em 21/11/2026.
 
 **[05: Aplicação no Cloud Run](05-cloud-run-app/README.pt-BR.md)**
 API de status em Node.js num contêiner, Artifact Registry com regras de limpeza, serviço privado no Cloud Run com conta de serviço própria e um segredo no Secret Manager cujo valor nunca passa pelo Terraform.
