@@ -1,0 +1,5 @@
+# Copy this file to terraform.tfvars locally and set your real values.
+# Never commit terraform.tfvars to version control.
+project_id        = "your-project-id"
+github_repository = "matheuslab-bit/google-cloud-portfolio"
+state_bucket      = "your-state-bucket"

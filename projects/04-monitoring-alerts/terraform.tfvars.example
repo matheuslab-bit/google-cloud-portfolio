@@ -1,0 +1,7 @@
+# Copy this file to terraform.tfvars locally and set your real values.
+# Never commit terraform.tfvars to version control.
+project_id      = "your-project-id"
+alert_email     = "you@example.com"
+billing_account = "012345-6789AB-CDEF01"
+monthly_budget  = 20
+currency_code   = "BRL"

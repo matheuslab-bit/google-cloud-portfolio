@@ -18,9 +18,22 @@ Iowa setup merged in [PR #4](https://github.com/matheuslab-bit/matheuslab-bit/pu
 Cloud Storage bucket in Iowa (`us-central1`) with object versioning, 7-day Soft Delete, a 90-day rule for old versions, uniform access, public access blocked and protection against deletion.
 Deployed on 2026-11-20 ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit/pull/9)). It holds the current state of labs 01 and 02.
 
+**[04: Monitoring, alerts and budget](04-monitoring-alerts/README.md)**
+E-mail channel, alerts for CPU above 80%, VM silent for 5 minutes and any IAM policy change (from free audit logs), plus a monthly budget with a forecast alert.
+Validated in CI (fmt, validate, Checkov). Not deployed yet.
+
+**[05: App on Cloud Run](05-cloud-run-app/README.md)**
+Node.js status API in a container, Artifact Registry with cleanup rules, private Cloud Run service with its own service account, and a Secret Manager secret whose value never touches Terraform.
+Validated in CI (fmt, validate, Checkov, app tests). Not deployed yet.
+
+**[06: Workload Identity Federation](06-workload-identity-federation/README.md)**
+GitHub Actions gets short-lived credentials with no stored key. The trust condition pins the repository and the `sub` claim, and the CI identity has only narrow read-only roles.
+Validated in CI (fmt, validate, Checkov). Not deployed yet.
+
 ## Notes
 
 - Lab 02 reads the `portfolio-vpc` from Lab 01 through a data source and manages only its own Iowa subnet.
+- Labs 04 to 06 are independent of each other and of labs 01 to 03, and will use their own prefixes in the same bucket.
 - Labs 01 and 02 store their state in the Lab 03 bucket, each under its own prefix, with locking. Lab 03 keeps its own state locally (plus a separate backup outside the repo), because a bucket cannot safely hold its own state.
 - Cost: the `e2-micro` VM, the 10 GB `pd-standard` disk and the bucket (about 24 KB of state) fit inside the monthly Free Tier. Shared quotas, network egress and other services can still cost money.
 
@@ -30,8 +43,9 @@ Deployed on 2026-11-20 ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit
 
 ## Planned
 
-- App on Cloud Run with Artifact Registry, Cloud SQL, Secret Manager and monitoring
-- Workload Identity Federation (CI without keys) and reusable Terraform modules
+- Cloud NAT for controlled egress from the private VM
+- Cloud SQL with private access for the Cloud Run app
+- Reusable Terraform modules
 
 Planned work stays out of the list above until it exists.
 

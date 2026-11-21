@@ -1,0 +1,14 @@
+{
+  "name": "status-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Small status API for the Cloud Run lab.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  }
+}
