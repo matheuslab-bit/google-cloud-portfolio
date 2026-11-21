@@ -57,7 +57,7 @@ Me -> IAP (35.235.240.0/20) -> TCP 22 (firewall priority 900) -> VM
 - `auditoria-seguranca.sh` looks for public VMs, firewall rules open to the internet, user-managed service account keys, public buckets, basic roles on service accounts and VMs using the default service account.
 - `custos-recursos.sh` lists what keeps billing without anyone using it: detached disks, idle static IPs, stopped VMs and old snapshots.
 
-When I ran the audit on this project, it found three default settings Google creates on its own (SSH and RDP open on the `default` network, and Editor on the default compute service account). The story and the fix are in [`dicas/seguranca.md`](dicas/seguranca.md).
+When I ran the audit on this project, it found three default settings Google creates on its own (SSH and RDP open on the `default` network, and Editor on the default compute service account). I fixed all three on 2026-11-21, and the audit now returns 0 alerts. The story and the fix are in [`dicas/seguranca.md`](dicas/seguranca.md).
 
 ## How I work in this repo
 

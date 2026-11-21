@@ -26,6 +26,19 @@ gcloud projects remove-iam-policy-binding MEU_PROJETO \
 
 Em organizações, a política `iam.automaticIamGrantsForDefaultServiceAccounts` impede esse Editor automático em projetos novos.
 
+### Corrigido em 21/11/2026
+
+Antes de mexer, salvei a configuração das duas regras (`gcloud compute firewall-rules describe ... --format=yaml`) e a política de IAM do projeto, para poder desfazer se algo quebrasse. Depois apaguei `default-allow-ssh` e `default-allow-rdp` e tirei o Editor da conta padrão. As regras do Lab 02 continuaram intactas, então o acesso pelo IAP não mudou. Rodando a auditoria de novo:
+
+```text
+== Firewall aberto para a internet (0.0.0.0/0)
+  [INFO] default-allow-icmp (rede default) libera 'icmp' para qualquer IP. Confira se e um servico publico de proposito.
+...
+Fim da auditoria: 0 alerta(s), 0 consulta(s) com erro.
+```
+
+Um cuidado depois de tirar o Editor: alguns serviços usam a conta padrão do Compute sem avisar, como o `gcloud run deploy --source`, que faz o build no Cloud Build com ela. Se aparecer erro de permissão ali, a correção é dar só o papel necessário (por exemplo, `roles/cloudbuild.builds.builder`), e não devolver o Editor.
+
 ## Checklist que eu uso
 
 - **Sem IP público em VM.** Administração pelo IAP (`--tunnel-through-iap`), com firewall liberando só `35.235.240.0/20`.
