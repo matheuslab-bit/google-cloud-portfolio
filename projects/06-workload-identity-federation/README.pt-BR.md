@@ -13,7 +13,7 @@ Job do GitHub Actions (pull request em matheuslab-bit/google-cloud-portfolio)
    │  1. pede um token OIDC ao GitHub (id-token: write)
    ▼
 Workload Identity Pool "github-actions" / provedor "github-oidc"
-   │  2. confere o emissor e a condição: repositório certo E sub = repo:...:pull_request
+   │  2. confere o emissor e a condição: ID do repositório E sub imutável = repo:DONO@ID/NOME@ID:pull_request
    ▼
 Security Token Service
    │  3. devolve um token federado
@@ -37,7 +37,8 @@ terraform plan contra o projeto real e o state remoto
 
 ## Decisões que tomei
 
-- **A condição é a segurança.** Um provedor sem `attribute_condition` aceita token de qualquer repositório do GitHub no mundo. O meu confere o repositório e ainda fixa o campo `sub` em `repo:matheuslab-bit/google-cloud-portfolio:pull_request`, então só execuções de pull request deste repositório entram. Aplicar mudanças a partir da `main` exigiria uma segunda identidade, separada, com `ref:refs/heads/main`.
+- **A condição é a segurança.** Um provedor sem `attribute_condition` aceita token de qualquer repositório do GitHub no mundo. O meu confere o ID do repositório e fixa o campo `sub` em `repo:matheuslab-bit@343780539/google-cloud-portfolio@1466069275:pull_request`, então só execuções de pull request deste repositório entram. Aplicar mudanças a partir da `main` exigiria uma segunda identidade, separada.
+- **Sub imutável.** Este repositório usa o formato imutável do `sub` do GitHub, com os IDs do dono e do repositório ao lado dos nomes. A minha primeira condição esperava o formato antigo `repo:DONO/NOME:pull_request`, e no primeiro teste o GitHub teve o token recusado (`rejected by the attribute condition`). Corrigi montando o `sub` a partir de `github_repository_id` e `github_repository_owner_id` (lidos com `gh api repos/DONO/NOME`). Os IDs ainda impedem que um repositório apagado e recriado com o mesmo nome entre.
 - **Sem o papel Viewer.** O Checkov apontou o `roles/viewer` (CKV_GCP_117), e estava certo: ele lê quase tudo. Troquei pelos papéis de leitura específicos que o `plan` precisa nestes labs.
 - **Até o `plan` grava uma coisa.** Ele cria e apaga o objeto `.tflock` no bucket de state. Uma condição de IAM limita essa escrita ao prefixo `labs/`.
 - **Valor de segredo fica de fora.** O `roles/secretmanager.viewer` mostra os metadados dos segredos, não o conteúdo. Ler valores exigiria `secretAccessor`, que o CI não recebe.
