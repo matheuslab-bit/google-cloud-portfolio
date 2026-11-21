@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Situação:** código escrito e validado no CI (fmt, validate, Checkov). Ainda não implantado.
+**Situação:** implantado em 21/11/2026 (9 recursos, `terraform plan` sem mudanças depois). Alertas disparados num teste no mesmo dia; falta conferir a chegada dos e-mails.
 
 VM que ninguém monitora só recebe atenção quando o usuário reclama. Este lab cria os alertas que eu gostaria de ter desde o primeiro dia: a VM do Lab 02 com CPU alta ou parada, um alerta de segurança quando alguém muda permissões no IAM e um orçamento mensal que avisa antes de a fatura assustar.
 
@@ -25,6 +25,7 @@ Cada alerta traz uma nota curta dizendo a quem recebe o que verificar primeiro.
 - **"Ausente" em vez de "abaixo de".** Quando a VM para, as métricas simplesmente deixam de chegar, e um limite comum nunca dispara sem dados. O `condition_absent` transforma esse silêncio em alerta.
 - **Alerta de segurança de graça.** Os logs de auditoria Admin Activity estão sempre ligados e não custam nada. Transformá-los em métrica é um jeito barato de saber quando permissões mudam, uma das primeiras coisas que um invasor faz.
 - **Gasto previsto.** O orçamento nunca para a cobrança, só avisa. A regra de previsão avisa enquanto ainda dá tempo de agir.
+- **Créditos promocionais não escondem o gasto.** O orçamento desconta o Free Tier e os descontos automáticos, mas não os créditos promocionais (trial e créditos mensais). Se descontasse tudo, o gasto apareceria como zero enquanto os créditos pagam a conta, e o aviso só chegaria quando eles acabassem. Minha meta é gastar menos de US$ 10 por mês; como a conta de faturamento é em reais, o orçamento é de R$ 50, um pouco abaixo da meta.
 - **Variáveis conferidas antes de qualquer chamada à API:** ID do projeto, e-mail, formato da conta de faturamento, moeda e limite de CPU.
 
 ## Checkov
@@ -34,6 +35,12 @@ Nenhum alerta. Os recursos deste lab são objetos de monitoramento e faturamento
 ## Como rodar
 
 É preciso o ID da conta de faturamento do projeto e o papel `roles/billing.costsManager` (ou Administrador da conta de faturamento) para criar o orçamento, além de `roles/monitoring.editor` e `roles/logging.configWriter` no projeto.
+
+A API Cloud Resource Manager precisa estar ativa antes do primeiro `plan`. O Terraform lê o número do projeto por ela (o orçamento só aceita `projects/<número>`), e essa leitura acontece antes de qualquer API ser ativada pelo próprio lab. Sem ela, o `plan` falha com erro 403 `SERVICE_DISABLED`. A ativação é gratuita:
+
+```powershell
+gcloud services enable cloudresourcemanager.googleapis.com --project=SEU_PROJETO
+```
 
 ```powershell
 cd projects/04-monitoring-alerts
@@ -68,4 +75,6 @@ Políticas de alerta, canais de notificação, orçamentos e uma métrica de log
 
 - [x] Terraform escrito (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`, `backend.tf`)
 - [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
-- [ ] Implantado e alertas testados (segurança, VM em silêncio, orçamento)
+- [x] Implantado em 21/11/2026
+- [x] Alertas disparados em 21/11/2026: IAM (a métrica de log contou 2 chamadas `SetIamPolicy` depois de conceder e remover `roles/viewer`) e VM em silêncio (VM desligada por cerca de 7 minutos, lacuna na métrica de uptime confirmada); orçamento conferido no faturamento
+- [ ] E-mails dos alertas conferidos na caixa de entrada

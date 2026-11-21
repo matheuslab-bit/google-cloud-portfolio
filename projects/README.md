@@ -20,7 +20,7 @@ Deployed on 2026-11-20 ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit
 
 **[04: Monitoring, alerts and budget](04-monitoring-alerts/README.md)**
 E-mail channel, alerts for CPU above 80%, VM silent for 5 minutes and any IAM policy change (from free audit logs), plus a monthly budget with a forecast alert.
-Validated in CI (fmt, validate, Checkov). Not deployed yet.
+Deployed and alerts triggered in a test on 2026-11-21.
 
 **[05: App on Cloud Run](05-cloud-run-app/README.md)**
 Node.js status API in a container, Artifact Registry with cleanup rules, private Cloud Run service with its own service account, and a Secret Manager secret whose value never touches Terraform.

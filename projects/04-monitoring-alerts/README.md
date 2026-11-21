@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md)
 
-**Status:** code written and validated in CI (fmt, validate, Checkov). Not deployed yet.
+**Status:** deployed on 2026-11-21 (9 resources, `terraform plan` with no changes afterwards). Alerts triggered in a test the same day; e-mail delivery still to be checked.
 
 A VM nobody watches only gets attention when a user complains. This lab adds the alerts I would want on day one: the Lab 02 VM using too much CPU or going silent, a security alert when someone changes IAM permissions, and a monthly budget that warns me before the bill surprises me.
 
@@ -25,6 +25,7 @@ Every alert has a short note telling whoever receives it what to check first.
 - **"Absent" instead of "below".** When a VM stops, its metrics simply stop arriving. A normal threshold never fires on missing data. The `condition_absent` turns that silence into an alert.
 - **Security alert for free.** Admin Activity audit logs are always on and cost nothing. Turning them into a metric is a cheap way to know when permissions change, which is one of the first things an attacker does.
 - **Forecasted spend.** A budget never stops spending, it only warns. The forecast rule gives the warning while there is still time to act.
+- **Promotional credits do not hide spending.** The budget subtracts Free Tier and automatic discounts, but not promotional credits (free trial and monthly credits). If it subtracted everything, spending would show as zero while credits pay the bill, and the warning would only arrive once they ran out. My goal is to spend less than US$ 10 a month; since the billing account is in BRL, the budget is R$ 50, a little below that goal.
 - **Variables checked before any API call:** project ID, e-mail, billing account format, currency and the CPU threshold.
 
 ## Checkov
@@ -34,6 +35,12 @@ No findings. The resources in this lab are monitoring and billing objects, which
 ## How to run
 
 You need the project's billing account ID and the `roles/billing.costsManager` role (or Billing Account Administrator) to create the budget, plus `roles/monitoring.editor` and `roles/logging.configWriter` on the project.
+
+The Cloud Resource Manager API must be enabled before the first `plan`. Terraform reads the project number through it (the budget only accepts `projects/<number>`), and that read happens before the lab enables any API itself. Without it, `plan` fails with a 403 `SERVICE_DISABLED` error. Enabling it is free:
+
+```powershell
+gcloud services enable cloudresourcemanager.googleapis.com --project=YOUR_PROJECT
+```
 
 ```powershell
 cd projects/04-monitoring-alerts
@@ -68,4 +75,6 @@ Alert policies, notification channels, budgets and a log-based metric with low v
 
 - [x] Terraform written (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`, `backend.tf`)
 - [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
-- [ ] Deployed and alerts tested (security alert, VM silent, budget)
+- [x] Deployed on 2026-11-21
+- [x] Alerts triggered on 2026-11-21: IAM (the log metric counted 2 `SetIamPolicy` calls after granting and removing `roles/viewer`) and VM silent (VM stopped for about 7 minutes, uptime metric gap confirmed); budget checked in Cloud Billing
+- [ ] Alert e-mails checked in the inbox

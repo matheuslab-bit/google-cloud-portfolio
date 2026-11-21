@@ -149,6 +149,17 @@ resource "google_billing_budget" "monthly" {
 
   budget_filter {
     projects = ["projects/${data.google_project.this.number}"]
+
+    # Subtract Free Tier and automatic discounts, but NOT promotional credits (free trial, monthly
+    # credits). The budget then tracks what is eating the credits, instead of a net cost of zero.
+    credit_types_treatment = "INCLUDE_SPECIFIED_CREDITS"
+    credit_types = [
+      "FREE_TIER",
+      "SUSTAINED_USAGE_DISCOUNT",
+      "DISCOUNT",
+      "COMMITTED_USAGE_DISCOUNT",
+      "COMMITTED_USAGE_DISCOUNT_DOLLAR_BASE",
+    ]
   }
 
   amount {
