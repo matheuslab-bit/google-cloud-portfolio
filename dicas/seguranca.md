@@ -42,13 +42,13 @@ Um cuidado depois de tirar o Editor: alguns serviços usam a conta padrão do Co
 ## Checklist que eu uso
 
 - **Sem IP público em VM.** Administração pelo IAP (`--tunnel-through-iap`), com firewall liberando só `35.235.240.0/20`.
-- **Sem chave de conta de serviço.** Chave JSON vaza em repositório, em e-mail, em print. Para CI, Workload Identity Federation ([Lab 06](../projects/06-workload-identity-federation/README.pt-BR.md)). Para VMs e Cloud Run, a conta anexada ao recurso.
+- **Sem chave de conta de serviço.** Chave JSON vaza em repositório, em e-mail, em print. Para CI, Workload Identity Federation ([Lab 06](../projects/06-workload-identity-federation/README.md)). Para VMs e Cloud Run, a conta anexada ao recurso.
 - **Uma conta de serviço por carga, com o mínimo de papéis.** Nunca a conta padrão do Compute.
 - **Nada de Owner/Editor para contas de serviço.** Papéis básicos são amplos demais. O Checkov aponta isso (`CKV_GCP_117`).
 - **Bucket com `public_access_prevention = enforced` e acesso uniforme.** Impede que um `allUsers` esquecido deixe dados públicos.
 - **Segredo no Secret Manager**, nunca em variável de ambiente fixa no código ou no Terraform.
 - **OS Login nas VMs**, em vez de chaves SSH espalhadas nos metadados do projeto.
-- **Alerta de mudança de IAM.** Os logs de auditoria Admin Activity são gratuitos e sempre ligados ([Lab 04](../projects/04-monitoring-alerts/README.pt-BR.md)).
+- **Alerta de mudança de IAM.** Os logs de auditoria Admin Activity são gratuitos e sempre ligados ([Lab 04](../projects/04-monitoring-alerts/README.md)).
 
 ## Prioridade de firewall no GCP
 

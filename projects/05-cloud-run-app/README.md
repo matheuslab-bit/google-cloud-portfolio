@@ -1,70 +1,70 @@
-# Lab 05 - App on Cloud Run with Artifact Registry and Secret Manager
+# Lab 05 - Aplicação no Cloud Run com Artifact Registry e Secret Manager
 
-[English](README.md) | [Português (Brasil)](README.pt-BR.md)
+> **Em poucas palavras:** Uma pequena API empacotada num contêiner e publicada no Cloud Run, que liga sozinho quando alguém chama e desliga quando ninguém usa. A senha da aplicação fica num cofre (Secret Manager), fora do código.
 
-**Status:** deployed on 2026-11-21 (stage 1: 7 resources; stage 2: the Cloud Run service; `terraform plan` with no changes afterwards).
+**Situação:** implantado em 21/11/2026 (etapa 1: 7 recursos; etapa 2: o serviço do Cloud Run; `terraform plan` sem mudanças depois).
 
-Labs 01 to 03 are about infrastructure. This one runs an application: a small status API in Node.js, packaged as a container, stored in Artifact Registry and served by Cloud Run. It also reads a secret from Secret Manager the right way.
+Os labs 01 a 03 são de infraestrutura. Este roda uma aplicação: uma API de status pequena em Node.js, empacotada em contêiner, guardada no Artifact Registry e servida pelo Cloud Run. Ela também lê um segredo do Secret Manager do jeito certo.
 
-## How it fits together
+## Como as peças se encaixam
 
 ```text
-docker build/push ──> Artifact Registry (us-central1, repo "apps")
+docker build/push ──> Artifact Registry (us-central1, repositório "apps")
                              │
                              ▼
-Me ── identity token ──> Cloud Run "status-api"  (runs as lab05-status-api)
+Eu ── token de identidade ──> Cloud Run "status-api"  (roda como lab05-status-api)
                              │
-                             └── reads APP_GREETING from Secret Manager (only this secret)
+                             └── lê APP_GREETING do Secret Manager (só esse segredo)
 ```
 
-## What it creates
+## O que é criado
 
-| Resource | Detail |
+| Recurso | Detalhe |
 | --- | --- |
-| Artifact Registry repository `apps` | Docker format, with cleanup rules: keeps the 5 most recent versions and deletes untagged images after 7 days |
-| Service account `lab05-status-api` | Runtime identity of the service, with access to one secret and nothing else |
-| Secret `lab05-app-greeting` | Only the container; the value is added with `gcloud` |
-| Cloud Run service `status-api` | 0 to 2 instances, 1 vCPU, 256 MiB, CPU billed only during requests, startup and liveness checks on `/healthz` |
-| Public access | Off by default (`allow_public_access = false`) |
+| Repositório `apps` no Artifact Registry | Formato Docker, com regras de limpeza: mantém as 5 versões mais recentes e apaga imagens sem tag depois de 7 dias |
+| Conta de serviço `lab05-status-api` | Identidade do serviço, com acesso a um segredo e a mais nada |
+| Segredo `lab05-app-greeting` | Só o contêiner do segredo; o valor é adicionado com `gcloud` |
+| Serviço `status-api` no Cloud Run | De 0 a 2 instâncias, 1 vCPU, 256 MiB, CPU cobrada só durante as requisições, checagens de inicialização e de vida em `/healthz` |
+| Acesso público | Desligado por padrão (`allow_public_access = false`) |
 
-## Decisions I made
+## Decisões que tomei
 
-- **The secret value never touches Terraform.** If Terraform created the secret version, the value would be stored in plain text in the state file. Terraform creates only the secret; I add the value with `gcloud secrets versions add`.
-- **Private by default.** Cloud Run services often get `allUsers` by habit. Here you call it with your own identity token, and public access is an explicit opt-in.
-- **One identity per service.** The default compute service account has Editor on the project. This service runs with its own account that can read a single secret.
-- **Two-step deploy.** The first `apply` creates the registry, the secret and the account (the service needs an image that does not exist yet). After pushing the image, the second `apply` with `image` set creates the service.
-- **Costs under control.** Scale to zero, a cap of 2 instances, CPU only during requests and cleanup rules in the registry.
-- **App ready for Cloud Run:** listens on `$PORT`, logs one JSON line per request (Cloud Logging reads it as structured data), and finishes in-flight requests on `SIGTERM`. The image runs as a non-root user.
+- **O valor do segredo nunca passa pelo Terraform.** Se o Terraform criasse a versão do segredo, o valor ficaria em texto puro no state. O Terraform cria só o segredo; o valor eu adiciono com `gcloud secrets versions add`.
+- **Privado por padrão.** É comum liberar `allUsers` no Cloud Run por costume. Aqui você chama o serviço com o seu próprio token de identidade, e o acesso público é uma escolha explícita.
+- **Uma identidade por serviço.** A conta de serviço padrão do Compute tem papel de Editor no projeto. Este serviço roda com uma conta própria, que só consegue ler um segredo.
+- **Implantação em duas etapas.** O primeiro `apply` cria o repositório, o segredo e a conta (o serviço precisa de uma imagem que ainda não existe). Depois de enviar a imagem, o segundo `apply`, com a variável `image` preenchida, cria o serviço.
+- **Custo sob controle.** Escala até zero, limite de 2 instâncias, CPU só durante as requisições e regras de limpeza no repositório.
+- **Aplicação pronta para o Cloud Run:** escuta na porta `$PORT`, grava uma linha JSON por requisição (o Cloud Logging lê como dado estruturado) e termina as requisições em andamento ao receber `SIGTERM`. A imagem roda com usuário sem privilégio de root.
 
 ## Checkov
 
-0 failed, 1 skipped with a reason in [`main.tf`](main.tf):
+0 falhas e 1 alerta aceito, com justificativa no [`main.tf`](main.tf):
 
-| Check | Why |
+| Checagem | Motivo |
 | --- | --- |
-| `CKV_GCP_84`, registry encrypted with my own key | Google-managed encryption is enough for a lab; customer-managed keys are planned for a Cloud KMS lab. |
+| `CKV_GCP_84`, repositório criptografado com chave própria | A criptografia gerenciada pelo Google basta para um lab; chaves próprias estão planejadas para um lab de Cloud KMS. |
 
-## How to run
+## Como rodar
 
 ```powershell
 cd projects/05-cloud-run-app
-Copy-Item terraform.tfvars.example terraform.tfvars   # set project_id, leave image empty
+Copy-Item terraform.tfvars.example terraform.tfvars   # defina project_id e deixe image vazio
 terraform init -lockfile=readonly
-terraform apply                                        # registry, secret and service account
+terraform apply                                        # repositório, segredo e conta de serviço
 
-# add the secret value without it touching Terraform
-"hello from Secret Manager" | gcloud secrets versions add lab05-app-greeting --data-file=-
+# adiciona o valor do segredo sem passar pelo Terraform
+"ola do Secret Manager" | gcloud secrets versions add lab05-app-greeting --data-file=-
 
-# build and push the image
+# gera e envia a imagem
 gcloud auth configure-docker us-central1-docker.pkg.dev
-docker build -t us-central1-docker.pkg.dev/PROJECT_ID/apps/status-api:1.0.0 app
-docker push us-central1-docker.pkg.dev/PROJECT_ID/apps/status-api:1.0.0
+docker build -t us-central1-docker.pkg.dev/SEU_PROJETO/apps/status-api:1.0.0 app
+docker push us-central1-docker.pkg.dev/SEU_PROJETO/apps/status-api:1.0.0
 
-# deploy the service
-terraform apply -var "image=us-central1-docker.pkg.dev/PROJECT_ID/apps/status-api:1.0.0"
+# implanta o serviço
+terraform apply -var "image=us-central1-docker.pkg.dev/SEU_PROJETO/apps/status-api:1.0.0"
 ```
 
-Call the private service with an identity token:
+Chamar o serviço privado com um token de identidade:
 
 ```bash
 URL=$(terraform output -raw service_url)
@@ -72,7 +72,7 @@ curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" "$URL/"
 # {"service":"status-api","revision":"status-api-00001-abc","version":"1.0.0","uptimeSeconds":12,"greetingConfigured":true}
 ```
 
-Run the app locally and its tests:
+Rodar a aplicação e os testes localmente:
 
 ```bash
 cd app
@@ -80,25 +80,25 @@ npm test
 PORT=8080 node server.js
 ```
 
-## What I learned deploying it
+## O que aprendi na implantação
 
-- **`/healthz` is not reachable from outside.** Cloud Run reserves URL paths that end in `z`, so a request to `$URL/healthz` gets a 404 page from Google, not from the app. The startup and liveness probes still work, because they call the container directly. For an external health check, a path like `/health` would be needed.
-- **The Docker build created three versions in the registry.** Recent Docker versions add provenance attachments, so one push stored a tagged image and two untagged entries. The "keep the 5 most recent" rule protects them for now; `docker build --provenance=false` creates a single manifest and keeps the repository clean.
+- **O `/healthz` não responde de fora.** O Cloud Run reserva os caminhos de URL que terminam em `z`, então uma chamada a `$URL/healthz` recebe uma página 404 do Google, não da aplicação. As checagens de inicialização e de vida continuam funcionando, porque chamam o contêiner direto. Para uma checagem externa, seria preciso um caminho como `/health`.
+- **O build do Docker criou três versões no registro.** O Docker recente acrescenta anexos de proveniência, então um único push guardou uma imagem com tag e duas entradas sem tag. A regra "manter as 5 mais recentes" protege essas versões por enquanto; `docker build --provenance=false` gera um só manifesto e deixa o repositório limpo.
 
-## Cost
+## Custo
 
-Cloud Run's free tier covers 2 million requests and 180,000 vCPU-seconds a month, and the service scales to zero when idle. Artifact Registry includes 0.5 GB of free storage, and the cleanup rules keep the repository small. Secret Manager has free monthly allowances for active versions and access calls. Free tier limits are shared across the billing account; the budget from [Lab 04](../04-monitoring-alerts/README.md) warns if something grows.
+O nível gratuito do Cloud Run cobre 2 milhões de requisições e 180 mil vCPU-segundo por mês, e o serviço escala até zero quando não há uso. O Artifact Registry inclui 0,5 GB de armazenamento gratuito, e as regras de limpeza mantêm o repositório pequeno. O Secret Manager tem cotas mensais gratuitas de versões ativas e acessos. As cotas gratuitas são compartilhadas pela conta de faturamento; o orçamento do [Lab 04](../04-monitoring-alerts/README.md) avisa se algo crescer.
 
-## Cleanup
+## Limpeza
 
 ```powershell
 terraform destroy
-gcloud secrets delete lab05-app-greeting   # only if the secret was left behind
+gcloud secrets delete lab05-app-greeting   # só se o segredo tiver ficado para trás
 ```
 
 ## Checklist
 
-- [x] Terraform written, with two-step deploy and opt-in public access
-- [x] App with tests (`npm test`) and Dockerfile with a non-root user
-- [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
-- [x] Deployed, called with an identity token and secret injection confirmed (`greetingConfigured: true`) on 2026-11-21; without a token the service returns 403
+- [x] Terraform escrito, com implantação em duas etapas e acesso público opcional
+- [x] Aplicação com testes (`npm test`) e Dockerfile com usuário sem root
+- [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
+- [x] Implantado, chamado com token de identidade e injeção do segredo confirmada (`greetingConfigured: true`) em 21/11/2026; sem token o serviço responde 403

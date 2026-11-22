@@ -4,10 +4,10 @@ Coisas que aprendi fazendo os labs, algumas do jeito difícil.
 
 ## State
 
-- **Nunca deixe o state só no seu disco.** Foi o motivo do [Lab 03](../projects/03-terraform-backend/README.pt-BR.md). Um bucket GCS com versionamento e lock resolve: dá para recuperar versões antigas, e duas execuções ao mesmo tempo não corrompem nada.
+- **Nunca deixe o state só no seu disco.** Foi o motivo do [Lab 03](../projects/03-terraform-backend/README.md). Um bucket GCS com versionamento e lock resolve: dá para recuperar versões antigas, e duas execuções ao mesmo tempo não corrompem nada.
 - **Um prefixo por projeto ou ambiente** (`labs/01-vpc-network`, `labs/02-...`). Se um state quebrar, os outros continuam inteiros.
 - **O bucket do state não guarda o próprio state.** Ele é criado com state local e uma cópia de segurança separada. Senão, para recuperar o bucket você precisaria do bucket.
-- **Segredo no state fica em texto puro.** Senha, chave e valor de `google_secret_manager_secret_version` vão para o arquivo de state. No [Lab 05](../projects/05-cloud-run-app/README.pt-BR.md), o Terraform cria só o segredo e o valor entra pelo `gcloud`.
+- **Segredo no state fica em texto puro.** Senha, chave e valor de `google_secret_manager_secret_version` vão para o arquivo de state. No [Lab 05](../projects/05-cloud-run-app/README.md), o Terraform cria só o segredo e o valor entra pelo `gcloud`.
 
 ## Lock travado
 

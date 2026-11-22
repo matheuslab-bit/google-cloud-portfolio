@@ -1,58 +1,58 @@
-# Lab 04 - Monitoring, alerts and budget
+# Lab 04 - Monitoramento, alertas e orçamento
 
-[English](README.md) | [Português (Brasil)](README.pt-BR.md)
+> **Em poucas palavras:** Um alarme que manda e-mail quando a VM sobrecarrega, quando ela para de responder ou quando alguém muda uma permissão, e um limite de gastos que avisa antes de a conta passar do combinado.
 
-**Status:** deployed on 2026-11-21 (9 resources, `terraform plan` with no changes afterwards). Alerts tested the same day, with the e-mails received.
+**Situação:** implantado em 21/11/2026 (9 recursos, `terraform plan` sem mudanças depois). Alertas testados no mesmo dia, com os e-mails recebidos.
 
-A VM nobody watches only gets attention when a user complains. This lab adds the alerts I would want on day one: the Lab 02 VM using too much CPU or going silent, a security alert when someone changes IAM permissions, and a monthly budget that warns me before the bill surprises me.
+VM que ninguém monitora só recebe atenção quando o usuário reclama. Este lab cria os alertas que eu gostaria de ter desde o primeiro dia: a VM do Lab 02 com CPU alta ou parada, um alerta de segurança quando alguém muda permissões no IAM e um orçamento mensal que avisa antes de a fatura assustar.
 
-## What it creates
+## O que é criado
 
-| Resource | What it does |
+| Recurso | O que faz |
 | --- | --- |
-| Notification channel (e-mail) | Where every alert and budget warning goes |
-| Alert: CPU high | Opens an incident when `lab02-secure-vm` stays above 80% CPU for 5 minutes |
-| Alert: VM silent | Opens an incident when the VM stops sending its uptime metric for 5 minutes (stopped or frozen) |
-| Log-based metric + alert | Counts `SetIamPolicy` calls in the audit logs and alerts on any change to who has access |
-| Monthly budget | Warns at 50%, 90% and 100% of the amount, and also when the **forecast** passes 100% |
-| APIs | Turns on Monitoring, Logging and Billing Budgets (and leaves them on if the lab is destroyed) |
+| Canal de notificação (e-mail) | Para onde vão todos os alertas e avisos de orçamento |
+| Alerta: CPU alta | Abre um incidente quando a `lab02-secure-vm` fica acima de 80% de CPU por 5 minutos |
+| Alerta: VM em silêncio | Abre um incidente quando a VM para de enviar a métrica de uptime por 5 minutos (desligada ou travada) |
+| Métrica de log + alerta | Conta as chamadas `SetIamPolicy` nos logs de auditoria e alerta em qualquer mudança de acesso |
+| Orçamento mensal | Avisa em 50%, 90% e 100% do valor, e também quando a **previsão** passa de 100% |
+| APIs | Ativa Monitoring, Logging e Billing Budgets (e mantém ativas se o lab for destruído) |
 
-Every alert has a short note telling whoever receives it what to check first.
+Cada alerta traz uma nota curta dizendo a quem recebe o que verificar primeiro.
 
-## Why I built it this way
+## Por que fiz assim
 
-- **CPU without an agent.** The CPU metric comes from the hypervisor, so it works without installing the Ops Agent on the VM. Memory and disk would need the agent; I left that for when the VM runs a real workload.
-- **"Absent" instead of "below".** When a VM stops, its metrics simply stop arriving. A normal threshold never fires on missing data. The `condition_absent` turns that silence into an alert.
-- **Security alert for free.** Admin Activity audit logs are always on and cost nothing. Turning them into a metric is a cheap way to know when permissions change, which is one of the first things an attacker does.
-- **Forecasted spend.** A budget never stops spending, it only warns. The forecast rule gives the warning while there is still time to act.
-- **Promotional credits do not hide spending.** The budget subtracts Free Tier and automatic discounts, but not promotional credits (free trial and monthly credits). If it subtracted everything, spending would show as zero while credits pay the bill, and the warning would only arrive once they ran out. My goal is to spend less than US$ 10 a month; since the billing account is in BRL, the budget is R$ 50, a little below that goal.
-- **Variables checked before any API call:** project ID, e-mail, billing account format, currency and the CPU threshold.
+- **CPU sem agente.** A métrica de CPU vem do hipervisor, então funciona sem instalar o Ops Agent na VM. Memória e disco precisariam do agente; deixei isso para quando a VM rodar uma carga de verdade.
+- **"Ausente" em vez de "abaixo de".** Quando a VM para, as métricas simplesmente deixam de chegar, e um limite comum nunca dispara sem dados. O `condition_absent` transforma esse silêncio em alerta.
+- **Alerta de segurança de graça.** Os logs de auditoria Admin Activity estão sempre ligados e não custam nada. Transformá-los em métrica é um jeito barato de saber quando permissões mudam, uma das primeiras coisas que um invasor faz.
+- **Gasto previsto.** O orçamento nunca para a cobrança, só avisa. A regra de previsão avisa enquanto ainda dá tempo de agir.
+- **Créditos promocionais não escondem o gasto.** O orçamento desconta o Free Tier e os descontos automáticos, mas não os créditos promocionais (trial e créditos mensais). Se descontasse tudo, o gasto apareceria como zero enquanto os créditos pagam a conta, e o aviso só chegaria quando eles acabassem. Minha meta é gastar menos de US$ 10 por mês; como a conta de faturamento é em reais, o orçamento é de R$ 50, um pouco abaixo da meta.
+- **Variáveis conferidas antes de qualquer chamada à API:** ID do projeto, e-mail, formato da conta de faturamento, moeda e limite de CPU.
 
 ## Checkov
 
-No findings. The resources in this lab are monitoring and billing objects, which Checkov does not flag.
+Nenhum alerta. Os recursos deste lab são objetos de monitoramento e faturamento, que o Checkov não aponta.
 
-## How to run
+## Como rodar
 
-You need the project's billing account ID and the `roles/billing.costsManager` role (or Billing Account Administrator) to create the budget, plus `roles/monitoring.editor` and `roles/logging.configWriter` on the project.
+É preciso o ID da conta de faturamento do projeto e o papel `roles/billing.costsManager` (ou Administrador da conta de faturamento) para criar o orçamento, além de `roles/monitoring.editor` e `roles/logging.configWriter` no projeto.
 
-The Cloud Resource Manager API must be enabled before the first `plan`. Terraform reads the project number through it (the budget only accepts `projects/<number>`), and that read happens before the lab enables any API itself. Without it, `plan` fails with a 403 `SERVICE_DISABLED` error. Enabling it is free:
+A API Cloud Resource Manager precisa estar ativa antes do primeiro `plan`. O Terraform lê o número do projeto por ela (o orçamento só aceita `projects/<número>`), e essa leitura acontece antes de qualquer API ser ativada pelo próprio lab. Sem ela, o `plan` falha com erro 403 `SERVICE_DISABLED`. A ativação é gratuita:
 
 ```powershell
-gcloud services enable cloudresourcemanager.googleapis.com --project=YOUR_PROJECT
+gcloud services enable cloudresourcemanager.googleapis.com --project=SEU_PROJETO
 ```
 
 ```powershell
 cd projects/04-monitoring-alerts
 Copy-Item terraform.tfvars.example terraform.tfvars
-# set project_id, alert_email, billing_account, monthly_budget and currency_code
+# defina project_id, alert_email, billing_account, monthly_budget e currency_code
 terraform init -lockfile=readonly
 terraform plan
 ```
 
-State goes to the Lab 03 bucket under `labs/04-monitoring-alerts` ([`backend.tf`](backend.tf)).
+O state vai para o bucket do Lab 03, no prefixo `labs/04-monitoring-alerts` ([`backend.tf`](backend.tf)).
 
-To validate without credentials, as CI does:
+Para validar sem credenciais, como o CI faz:
 
 ```powershell
 terraform fmt -check -recursive
@@ -60,21 +60,21 @@ terraform init -backend=false -lockfile=readonly -input=false
 terraform validate
 ```
 
-## How to test after deploying
+## Como testar depois de implantar
 
-- Confirm the e-mail channel (Google sends a verification message).
-- Grant and remove any role in IAM: the security alert should arrive within a couple of minutes.
-- Stop the VM: the "VM silent" alert should open after about 5 minutes, and close after it starts again.
-- In Billing > Budgets, check that the budget shows the project and the thresholds.
+- Confirme o canal de e-mail (o Google manda uma mensagem de verificação).
+- Conceda e remova qualquer papel no IAM: o alerta de segurança deve chegar em poucos minutos.
+- Desligue a VM: o alerta "VM em silêncio" deve abrir em cerca de 5 minutos e fechar quando ela voltar.
+- Em Faturamento > Orçamentos, confira se o orçamento mostra o projeto e os limites.
 
-## Cost
+## Custo
 
-Alert policies, notification channels, budgets and a log-based metric with low volume fall within the free monitoring and logging allowances. The VM it watches is the Lab 02 VM, so nothing new is billed by this lab.
+Políticas de alerta, canais de notificação, orçamentos e uma métrica de log de baixo volume ficam dentro das cotas gratuitas de monitoramento e logs. A VM monitorada é a do Lab 02, então este lab não gera cobrança nova.
 
 ## Checklist
 
-- [x] Terraform written (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`, `backend.tf`)
-- [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
-- [x] Deployed on 2026-11-21
-- [x] Alerts triggered on 2026-11-21: IAM (the log metric counted 2 `SetIamPolicy` calls after granting and removing `roles/viewer`) and VM silent (VM stopped for about 7 minutes, uptime metric gap confirmed); budget checked in Cloud Billing
-- [x] Alert e-mails received on 2026-11-21: "SetIamPolicy detected" (IAM test and the Lab 05 and 06 deployments), "Uptime metric absent" for `lab02-secure-vm`, and the "Alert recovered" messages when each incident closed
+- [x] Terraform escrito (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`, `backend.tf`)
+- [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
+- [x] Implantado em 21/11/2026
+- [x] Alertas disparados em 21/11/2026: IAM (a métrica de log contou 2 chamadas `SetIamPolicy` depois de conceder e remover `roles/viewer`) e VM em silêncio (VM desligada por cerca de 7 minutos, lacuna na métrica de uptime confirmada); orçamento conferido no faturamento
+- [x] E-mails dos alertas recebidos em 21/11/2026: "SetIamPolicy detected" (teste de IAM e as implantações dos labs 05 e 06), "Uptime metric absent" da `lab02-secure-vm` e as mensagens "Alert recovered" quando cada incidente fechou
