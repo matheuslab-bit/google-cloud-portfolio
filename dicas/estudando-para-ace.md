@@ -6,11 +6,11 @@ A ACE cobra o dia a dia de quem opera o Google Cloud: criar recursos, dar acesso
 
 | Área da prova | Onde pratiquei |
 | --- | --- |
-| Configurar o ambiente: projetos, faturamento, APIs, orçamentos | Projeto próprio, APIs pelo Terraform e orçamento no [Lab 04](../projects/04-monitoring-alerts/README.pt-BR.md) |
-| Planejar e configurar: Compute, rede, armazenamento | VPC no [Lab 01](../projects/01-vpc-network/README.pt-BR.md), VM no [Lab 02](../projects/02-secure-compute-engine/README.pt-BR.md), bucket no [Lab 03](../projects/03-terraform-backend/README.pt-BR.md) |
-| Implantar e implementar: VMs, Cloud Run, Terraform | Labs 02 e [05](../projects/05-cloud-run-app/README.pt-BR.md), todos com Terraform |
+| Configurar o ambiente: projetos, faturamento, APIs, orçamentos | Projeto próprio, APIs pelo Terraform e orçamento no [Lab 04](../projects/04-monitoring-alerts/README.md) |
+| Planejar e configurar: Compute, rede, armazenamento | VPC no [Lab 01](../projects/01-vpc-network/README.md), VM no [Lab 02](../projects/02-secure-compute-engine/README.md), bucket no [Lab 03](../projects/03-terraform-backend/README.md) |
+| Implantar e implementar: VMs, Cloud Run, Terraform | Labs 02 e [05](../projects/05-cloud-run-app/README.md), todos com Terraform |
 | Garantir a operação: monitoramento, logs, recuperação | Alertas no Lab 04, recuperação de state no Lab 03 |
-| Configurar acesso e segurança: IAM, contas de serviço | Contas dedicadas em todos os labs, IAP e OS Login no Lab 02, Workload Identity no [Lab 06](../projects/06-workload-identity-federation/README.pt-BR.md) |
+| Configurar acesso e segurança: IAM, contas de serviço | Contas dedicadas em todos os labs, IAP e OS Login no Lab 02, Workload Identity no [Lab 06](../projects/06-workload-identity-federation/README.md) |
 
 ## O que costuma confundir (e cai na prova)
 
