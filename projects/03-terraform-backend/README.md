@@ -1,123 +1,123 @@
-# Lab 03 - Terraform state in Cloud Storage
+# Lab 03 - State do Terraform no Cloud Storage
 
-[English](README.md) | [Português (Brasil)](README.pt-BR.md)
+> **Em poucas palavras:** O Terraform anota num arquivo (o state) tudo o que criou. Este lab guarda esse arquivo num cofre na nuvem, com histórico de versões e uma trava para duas pessoas não mexerem ao mesmo tempo.
 
-**Status:** deployed in Iowa (`us-central1`) on 2026-11-20. It holds the current Terraform state of Lab 01 (`labs/01-vpc-network`) and Lab 02 (`labs/02-secure-compute-engine`). Temporary `.tflock` objects show up while a lock is held.
+**Situação:** implantado em Iowa (`us-central1`) em 20/11/2026. Guarda o state atual do Lab 01 (`labs/01-vpc-network`) e do Lab 02 (`labs/02-secure-compute-engine`). Objetos `.tflock` temporários aparecem enquanto um lock está ativo.
 
-A dedicated, locked-down Cloud Storage bucket to keep the Terraform state of the other labs. The code and CI were merged in [PR #9](https://github.com/matheuslab-bit/matheuslab-bit/pull/9). On 2026-11-20 I created the bucket, moved the state of labs 01 and 02 into it with `terraform init -migrate-state` and added their `backend.tf` files in [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10).
+Um bucket do Cloud Storage dedicado e bem protegido para guardar o state do Terraform dos outros labs. Em 20/11/2026 criei o bucket e migrei para ele o state dos labs 01 e 02 com `terraform init -migrate-state`.
 
-## Why
+## Por quê
 
-Before this lab, each lab kept its `.tfstate` on my disk. If the disk died, or if two runs happened at the same time, the state could be lost or corrupted. With a shared bucket I get locking, older versions I can recover and a lifecycle rule that keeps costs under control.
+Antes deste lab, cada lab guardava o `.tfstate` no meu disco. Se o disco desse problema, ou se duas execuções rodassem ao mesmo tempo, o state podia se perder ou corromper. Com um bucket compartilhado, ganho lock, versões antigas que consigo recuperar e uma regra de ciclo de vida que mantém o custo sob controle.
 
-## Layout
+## Estrutura
 
 ```text
-Lab 03 (local state, the starting point)
-  └── creates and manages the bucket (us-central1, STANDARD)
+Lab 03 (state local, o ponto de partida)
+  └── cria e gerencia o bucket (us-central1, STANDARD)
         ├── labs/01-vpc-network/default.tfstate            <- Lab 01
         └── labs/02-secure-compute-engine/default.tfstate  <- Lab 02
 ```
 
-Bucket settings: uniform bucket-level access, public access prevention enforced, versioning on, 7-day Soft Delete (604800 s), `force_destroy = false`, `deletion_policy = "PREVENT"`, `prevent_destroy = true` and deletion of archived versions after 90 days.
+Configuração do bucket: acesso uniforme no nível do bucket, prevenção de acesso público obrigatória, versionamento ligado, Soft Delete de 7 dias (604800 s), `force_destroy = false`, `deletion_policy = "PREVENT"`, `prevent_destroy = true` e exclusão das versões arquivadas depois de 90 dias.
 
-### Who keeps the state of the state bucket?
+### Quem guarda o state do bucket de state?
 
-This lab keeps its own `terraform.tfstate` **local**, with a backup copy in another folder outside the repository. A local copy on the same disk does not protect against a disk failure, so it is not a real backup.
+Este lab mantém o próprio `terraform.tfstate` **local**, com uma cópia de backup em outra pasta, fora do repositório. Uma cópia local no mesmo disco não protege contra falha do disco, então não é um backup de verdade.
 
-Keeping a bucket's state inside the bucket itself creates a chicken-and-egg problem when you create, recover or delete it. Since Lab 03 manages a single, stable resource, a local state with a separate copy is simple and avoids locking myself out.
+Guardar o state de um bucket dentro dele mesmo cria o problema do ovo e da galinha na hora de criar, recuperar ou apagar. Como o Lab 03 cuida de um único recurso estável, state local com uma cópia separada é simples e evita que eu me tranque para fora.
 
-The other labs (01, 02 and future ones) point to this bucket with `backend "gcs"` blocks, each under its own prefix, so each one has an independent state.
+Os outros labs (01, 02 e os futuros) apontam para este bucket com blocos `backend "gcs"`, cada um no seu prefixo, então cada um tem um state independente.
 
-## How the GCS backend works
+## Como o backend GCS funciona
 
-**Locking.** Before any command that reads or changes state (`plan`, `apply`, `destroy`, `import`), Terraform creates a temporary `.tflock` object next to `default.tfstate`. It does this even for `plan`, which does not write anything. If a second run starts at the same time, it stops right away instead of corrupting the state.
+**Lock.** Antes de qualquer comando que leia ou altere o state (`plan`, `apply`, `destroy`, `import`), o Terraform cria um objeto `.tflock` temporário ao lado do `default.tfstate`. Ele faz isso até no `plan`, que não grava nada. Se uma segunda execução começar ao mesmo tempo, ela para na hora em vez de corromper o state.
 
-**Versioning.** Every `terraform apply` writes a new version of `default.tfstate`. The previous one is not overwritten: GCS keeps it as a noncurrent (`ARCHIVED`) version with its own generation number.
+**Versionamento.** Cada `terraform apply` grava uma nova versão do `default.tfstate`. A anterior não é sobrescrita: o GCS guarda como versão não atual (`ARCHIVED`), com um número de geração próprio.
 
-**90-day rule** (`days_since_noncurrent_time = 90`, `with_state = "ARCHIVED"`). Old versions are deleted after 90 days. The current state is never deleted by this rule, no matter how long it goes without a new `apply`. GCS runs these rules in the background, so the deletion can happen some time after day 90.
+**Regra de 90 dias** (`days_since_noncurrent_time = 90`, `with_state = "ARCHIVED"`). As versões antigas são apagadas depois de 90 dias. O state atual nunca é apagado por essa regra, não importa quanto tempo passe sem um novo `apply`. O GCS executa essas regras em segundo plano, então a exclusão pode acontecer algum tempo depois do 90º dia.
 
-**7-day Soft Delete** (`retention_duration_seconds = 604800`). I set it explicitly instead of trusting the default. When a version is deleted (by the 90-day rule or by hand), it stays recoverable for 7 more days.
+**Soft Delete de 7 dias** (`retention_duration_seconds = 604800`). Defini explicitamente, em vez de confiar no padrão. Quando uma versão é apagada (pela regra de 90 dias ou manualmente), ela ainda pode ser recuperada por mais 7 dias.
 
-In total, an old state version can be recovered for about 90 days as a noncurrent version, plus 7 days in Soft Delete.
+No total, uma versão antiga do state pode ser recuperada por cerca de 90 dias como versão não atual, mais 7 dias no Soft Delete.
 
-## Security
+## Segurança
 
-- **`uniform_bucket_level_access = true`:** no per-object ACLs. Access is controlled only by IAM.
-- **`public_access_prevention = "enforced"`:** blocks `allUsers` and `allAuthenticatedUsers`, so the state can never be made public by accident.
-- **`force_destroy = false`:** Terraform cannot empty and delete the bucket while it has state in it.
-- **`deletion_policy = "PREVENT"`:** deletion protection in the Google provider `7.46.2`.
-- **`lifecycle.prevent_destroy = true`:** Terraform rejects any plan that would destroy the bucket.
+- **`uniform_bucket_level_access = true`:** sem ACL por objeto. O acesso é controlado só pelo IAM.
+- **`public_access_prevention = "enforced"`:** bloqueia `allUsers` e `allAuthenticatedUsers`, então o state nunca fica público por engano.
+- **`force_destroy = false`:** o Terraform não consegue esvaziar e apagar o bucket enquanto houver state nele.
+- **`deletion_policy = "PREVENT"`:** proteção contra exclusão no provider do Google `7.46.2`.
+- **`lifecycle.prevent_destroy = true`:** o Terraform recusa qualquer plano que destruiria o bucket.
 
-These three protections only stop accidents that go **through Terraform**. They do not replace backups, and they do not stop someone with permission from deleting the bucket in the Console, with `gcloud storage rm` or through the API.
+Essas três proteções só evitam acidentes que passam **pelo Terraform**. Elas não substituem backup e não impedem que alguém com permissão apague o bucket pelo Console, com `gcloud storage rm` ou pela API.
 
-`project_id` and `bucket_name` are required variables set in a local `terraform.tfvars` (ignored by Git). Use a bucket name that does not reveal anything, like `gcp-portfolio-tfstate-usc1-<random-suffix>`, without your project ID or personal data.
+`project_id` e `bucket_name` são variáveis obrigatórias definidas num `terraform.tfvars` local (ignorado pelo Git). Use um nome de bucket que não revele nada, como `gcp-portfolio-tfstate-usc1-<sufixo-aleatorio>`, sem o ID do projeto nem dados pessoais.
 
 ### Checkov
 
-Versioning, uniform access and public access prevention pass. One finding is accepted and explained with `#checkov:skip` in [`main.tf`](main.tf):
+Versionamento, acesso uniforme e prevenção de acesso público passam. Um alerta foi aceito e está explicado com `#checkov:skip` no [`main.tf`](main.tf):
 
-| Check | Why |
+| Checagem | Motivo |
 | --- | --- |
-| `CKV_GCP_62`, bucket access logging | It would need a second bucket just for logs. Changes to the bucket are already recorded in Cloud Audit Logs (Admin Activity). |
+| `CKV_GCP_62`, log de acesso ao bucket | Exigiria um segundo bucket só para logs. As alterações no bucket já ficam registradas no Cloud Audit Logs (Admin Activity). |
 
-### Permissions
+### Permissões
 
-- **To create the bucket (this lab):** `storage.buckets.create`, `storage.buckets.get` and `storage.buckets.update` in the project (for example `roles/storage.admin`, or a custom role).
-- **To use the backend in other labs (`plan` / `apply`):** read and write on the objects (`roles/storage.objectAdmin` on this bucket, or `storage.objects.get`, `list`, `create` and `delete`).
-- **For `terraform plan` in CI** (with Workload Identity Federation, in a future lab): even a read-only `plan` needs to create and delete the `.tflock` (`storage.objects.create` and `storage.objects.delete` on the prefix). Turning off locking on a shared state is a bad idea, because two runs at once could read inconsistent data.
-- **To restore soft-deleted objects:** `storage.objects.list`, `storage.objects.get`, `storage.objects.restore` and `storage.objects.create` on the bucket.
+- **Para criar o bucket (este lab):** `storage.buckets.create`, `storage.buckets.get` e `storage.buckets.update` no projeto (por exemplo, `roles/storage.admin` ou um papel personalizado).
+- **Para usar o backend nos outros labs (`plan` / `apply`):** leitura e escrita nos objetos (`roles/storage.objectAdmin` neste bucket, ou `storage.objects.get`, `list`, `create` e `delete`).
+- **Para `terraform plan` no CI** (com Workload Identity Federation, num lab futuro): até um `plan` só de leitura precisa criar e apagar o `.tflock` (`storage.objects.create` e `storage.objects.delete` no prefixo). Desligar o lock num state compartilhado é má ideia, porque duas execuções ao mesmo tempo podem ler dados inconsistentes.
+- **Para restaurar objetos em Soft Delete:** `storage.objects.list`, `storage.objects.get`, `storage.objects.restore` e `storage.objects.create` no bucket.
 
-## Cost
+## Custo
 
-The Free Tier includes **5 GB-month of Regional Standard Storage** in some US regions (including `us-central1`), plus a monthly allowance of Class A and Class B operations, following Google's current terms.
+O nível gratuito inclui **5 GB-mês de Regional Standard Storage** em algumas regiões dos EUA (incluindo `us-central1`), além de uma cota mensal de operações Classe A e Classe B, conforme as regras atuais do Google.
 
-- The state of labs 01 and 02 adds up to **about 24 KB** (`4.88 KB` + `19.10 KB`).
-- Even with dozens of old versions kept for 90 days, it stays far below 5 MB.
-- The Free Tier is shared across the billing account. Going over the operation limits, cross-region egress or other projects can cost money. Billing alerts do not block spending.
+- O state dos labs 01 e 02 soma **cerca de 24 KB** (`4,88 KB` + `19,10 KB`).
+- Mesmo com dezenas de versões antigas guardadas por 90 dias, fica muito abaixo de 5 MB.
+- O nível gratuito é compartilhado pela conta de faturamento. Passar dos limites de operações, tráfego entre regiões ou outros projetos pode gerar cobrança. Alertas de faturamento não bloqueiam gastos.
 
-## Recovering the state
+## Recuperando o state
 
-> **Before anything:** copy the current `default.tfstate` (if it exists) somewhere safe before restoring an older version. If you pick the wrong version, you can still go back.
+> **Antes de tudo:** copie o `default.tfstate` atual (se existir) para um lugar seguro antes de restaurar uma versão antiga. Se escolher a versão errada, ainda dá para voltar.
 
-### A. Restore an old version (within the 90 days)
+### A. Restaurar uma versão antiga (dentro dos 90 dias)
 
-1. Save the current state:
+1. Salve o state atual:
    ```powershell
-   gcloud storage cp gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate ./pre-recovery-default.tfstate.bak
+   gcloud storage cp gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate ./pre-recovery-default.tfstate.bak
    ```
-2. List all versions of the lab's state:
+2. Liste todas as versões do state do lab:
    ```powershell
-   gcloud storage ls --all-versions gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate
+   gcloud storage ls --all-versions gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate
    ```
-3. Look at the dates and pick the `<GENERATION>` of the last good version.
-4. Copy that version back as the current state:
+3. Olhe as datas e escolha o `<GENERATION>` da última versão boa.
+4. Copie essa versão de volta como state atual:
    ```powershell
-   gcloud storage cp gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate#<GENERATION> gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate
+   gcloud storage cp gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate#<GENERATION> gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate
    ```
-5. Run `terraform plan` in the lab folder and confirm the state matches what is in the cloud.
+5. Rode `terraform plan` na pasta do lab e confirme que o state bate com o que está na nuvem.
 
-### B. Restore a deleted version (within the 7 days of Soft Delete)
+### B. Restaurar uma versão apagada (dentro dos 7 dias de Soft Delete)
 
-If the state or an old version was deleted (by hand or by the 90-day rule), it can still be recovered for 7 days. You need `storage.objects.list`, `get`, `restore` and `create` on the bucket.
+Se o state ou uma versão antiga foi apagado (manualmente ou pela regra de 90 dias), ainda dá para recuperar por 7 dias. É preciso ter `storage.objects.list`, `get`, `restore` e `create` no bucket.
 
-1. Save the current state:
+1. Salve o state atual:
    ```powershell
-   gcloud storage cp gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate ./pre-soft-restore-default.tfstate.bak
+   gcloud storage cp gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate ./pre-soft-restore-default.tfstate.bak
    ```
-2. List the deleted versions:
+2. Liste as versões apagadas:
    ```powershell
-   gcloud storage ls --soft-deleted gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate
+   gcloud storage ls --soft-deleted gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate
    ```
-3. Pick the `<GENERATION>` and restore it:
+3. Escolha o `<GENERATION>` e restaure:
    ```powershell
-   gcloud storage restore gs://YOUR_BUCKET_NAME/labs/01-vpc-network/default.tfstate#<GENERATION>
+   gcloud storage restore gs://SEU_BUCKET/labs/01-vpc-network/default.tfstate#<GENERATION>
    ```
-4. Run `terraform plan` in the lab folder to confirm.
+4. Rode `terraform plan` na pasta do lab para confirmar.
 
-## How to run
+## Como rodar
 
-Always from `projects/03-terraform-backend/`:
+Sempre dentro de `projects/03-terraform-backend/`:
 
 ```powershell
 terraform fmt -check -recursive
@@ -125,20 +125,20 @@ terraform init -backend=false -lockfile=readonly -input=false
 terraform validate
 ```
 
-To plan against the deployed bucket, with a local `terraform.tfvars` copied from `terraform.tfvars.example`:
+Para rodar o plan contra o bucket implantado, com um `terraform.tfvars` local copiado do `terraform.tfvars.example`:
 
 ```powershell
 Copy-Item terraform.tfvars.example terraform.tfvars
-# put the real project_id and a globally unique bucket_name in terraform.tfvars
+# coloque o project_id real e um bucket_name único no terraform.tfvars
 terraform plan -input=false
 ```
 
-Do not commit `terraform.tfvars`, `*.tfplan` or `*.tfstate`.
+Não coloque `terraform.tfvars`, `*.tfplan` nem `*.tfstate` no Git.
 
 ## Checklist
 
-- [x] Terraform files written (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`, `terraform.tfvars.example`)
-- [x] Documentation in English and Portuguese (`README.md` and `README.pt-BR.md`)
-- [x] `terraform fmt -check`, `terraform init -backend=false` and `terraform validate` passed locally and in GitHub Actions ([PR #9](https://github.com/matheuslab-bit/matheuslab-bit/pull/9))
-- [x] Bucket created in Google Cloud (`us-central1`, 2026-11-20)
-- [x] State of labs 01 and 02 moved with `terraform init -migrate-state` (`No changes` checked) and `backend.tf` files added in [PR #10](https://github.com/matheuslab-bit/matheuslab-bit/pull/10)
+- [x] Arquivos do Terraform escritos (`versions.tf`, `variables.tf`, `main.tf`, `outputs.tf`, `terraform.tfvars.example`)
+- [x] Documentação em português e inglês (`README.md` e `README.md`)
+- [x] `terraform fmt -check`, `terraform init -backend=false` e `terraform validate` aprovados localmente e no GitHub Actions
+- [x] Bucket criado no Google Cloud (`us-central1`, 20/11/2026)
+- [x] State dos labs 01 e 02 migrado com `terraform init -migrate-state` (`No changes` conferido) e arquivos `backend.tf` adicionados

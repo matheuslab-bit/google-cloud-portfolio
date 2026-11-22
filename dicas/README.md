@@ -2,8 +2,6 @@
 
 O que eu fui aprendendo montando os labs: comandos que uso sempre, erros que já me fizeram perder tempo e cuidados de segurança e custo. Escrevo aqui para consultar depois e para quem estiver começando no Google Cloud.
 
-*Esta seção está em português. The rest of the repository is bilingual.*
-
 | Arquivo | Assunto |
 | --- | --- |
 | [gcloud-essencial.md](gcloud-essencial.md) | Os comandos do `gcloud` que eu mais uso, organizados por tarefa |

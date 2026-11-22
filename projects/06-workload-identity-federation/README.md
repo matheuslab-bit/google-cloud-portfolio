@@ -1,59 +1,59 @@
-# Lab 06 - Workload Identity Federation (CI without keys)
+# Lab 06 - Workload Identity Federation (CI sem chave)
 
-[English](README.md) | [Português (Brasil)](README.pt-BR.md)
+> **Em poucas palavras:** Em vez de guardar uma senha do Google Cloud no GitHub, o GitHub mostra um crachá temporário a cada execução, e o Google confere se o crachá veio deste repositório antes de deixar entrar.
 
-**Status:** deployed on 2026-11-21 (17 resources, `terraform plan` with no changes afterwards). The workflow is active in [`.github/workflows/terraform-plan.yml`](../../.github/workflows/terraform-plan.yml).
+**Situação:** implantado em 21/11/2026 (17 recursos, `terraform plan` sem mudanças depois). O workflow está ativo em [`.github/workflows/terraform-plan.yml`](../../.github/workflows/terraform-plan.yml).
 
-Today my CI only checks syntax, because it has no access to the cloud. The usual shortcut is to create a service account key, paste the JSON into a GitHub secret and forget it there for years. That key is the classic leak. This lab gives GitHub Actions access to Google Cloud with no stored key at all: GitHub proves who it is with a short-lived token, and Google trades it for temporary credentials.
+Sem acesso à nuvem, o CI só consegue conferir a sintaxe. O atalho comum é criar uma chave de conta de serviço, colar o JSON num secret do GitHub e esquecer lá por anos. Essa chave é o vazamento clássico. Este lab dá ao GitHub Actions acesso ao Google Cloud sem nenhuma chave guardada: o GitHub prova quem é com um token de vida curta, e o Google troca esse token por credenciais temporárias.
 
-## How the token exchange works
+## Como funciona a troca de token
 
 ```text
-GitHub Actions job (pull request in matheuslab-bit/google-cloud-portfolio)
-   │  1. asks GitHub for an OIDC token (id-token: write)
+Job do GitHub Actions (pull request em matheuslab-bit/google-cloud-portfolio)
+   │  1. pede um token OIDC ao GitHub (id-token: write)
    ▼
-Workload Identity Pool "github-actions" / provider "github-oidc"
-   │  2. checks the issuer and the condition: repository ID AND immutable sub = repo:OWNER@ID/NAME@ID:pull_request
+Workload Identity Pool "github-actions" / provedor "github-oidc"
+   │  2. confere o emissor e a condição: ID do repositório E sub imutável = repo:DONO@ID/NOME@ID:pull_request
    ▼
 Security Token Service
-   │  3. returns a federated token
+   │  3. devolve um token federado
    ▼
-Service account "github-terraform-plan" (read-only)
-   │  4. short-lived credentials, valid for about an hour
+Conta de serviço "github-terraform-plan" (só leitura)
+   │  4. credenciais temporárias, válidas por cerca de uma hora
    ▼
-terraform plan against the real project and the remote state
+terraform plan contra o projeto real e o state remoto
 ```
 
-## What it creates
+## O que é criado
 
-| Resource | Detail |
+| Recurso | Detalhe |
 | --- | --- |
-| Workload identity pool `github-actions` | Where external identities from GitHub land |
-| OIDC provider `github-oidc` | Trusts `token.actions.githubusercontent.com` and maps the token claims (sub, repository, owner, ref) |
-| Service account `github-terraform-plan` | No keys. Only this repository can impersonate it |
-| Read-only roles | Compute, service accounts, IAM policies, enabled APIs, Monitoring, Logging, Cloud Run, Artifact Registry and secret metadata |
-| Access to the state bucket | Only objects under `labs/`, needed to create and delete the `.tflock` during `plan` |
-| Example workflow | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), kept as reference; the active copy is in `.github/workflows/terraform-plan.yml` |
+| Pool de identidade `github-actions` | Onde chegam as identidades externas vindas do GitHub |
+| Provedor OIDC `github-oidc` | Confia em `token.actions.githubusercontent.com` e mapeia os campos do token (sub, repositório, dono, ref) |
+| Conta de serviço `github-terraform-plan` | Sem chaves. Só este repositório consegue usá-la |
+| Papéis só de leitura | Compute, contas de serviço, políticas de IAM, APIs ativas, Monitoring, Logging, Cloud Run, Artifact Registry e metadados de segredos |
+| Acesso ao bucket de state | Só aos objetos em `labs/`, necessário para criar e apagar o `.tflock` durante o `plan` |
+| Workflow de exemplo | [`examples/terraform-plan.yml`](examples/terraform-plan.yml), guardado como referência; a cópia ativa está em `.github/workflows/terraform-plan.yml` |
 
-## Decisions I made
+## Decisões que tomei
 
-- **The condition is the security.** A provider without `attribute_condition` accepts tokens from any GitHub repository in the world. Mine checks the repository ID and pins the `sub` claim to `repo:matheuslab-bit@343780539/google-cloud-portfolio@1466069275:pull_request`, so only pull request runs of this repository get in. Applying from `main` would need a second, separate identity.
-- **Immutable subject.** This repository uses GitHub's immutable `sub` format, with the owner and repository IDs next to the names. My first condition expected the old `repo:OWNER/NAME:pull_request` format and GitHub's token was rejected (`rejected by the attribute condition`) in the first test run. I fixed it by building the `sub` from `github_repository_id` and `github_repository_owner_id` (read with `gh api repos/OWNER/NAME`). The IDs also stop a deleted and recreated repository with the same name from getting in.
-- **No Viewer role.** Checkov flagged `roles/viewer` (CKV_GCP_117), and it was right: it reads almost everything. I replaced it with the specific read-only roles that `plan` needs for these labs.
-- **Even `plan` writes one thing.** It creates and deletes the `.tflock` object in the state bucket. An IAM condition limits that write access to the `labs/` prefix.
-- **Secret values stay out.** `roles/secretmanager.viewer` shows secret metadata, not the content. Reading values would need `secretAccessor`, which CI does not get.
+- **A condição é a segurança.** Um provedor sem `attribute_condition` aceita token de qualquer repositório do GitHub no mundo. O meu confere o ID do repositório e fixa o campo `sub` em `repo:matheuslab-bit@343780539/google-cloud-portfolio@1466069275:pull_request`, então só execuções de pull request deste repositório entram. Aplicar mudanças a partir da `main` exigiria uma segunda identidade, separada.
+- **Sub imutável.** Este repositório usa o formato imutável do `sub` do GitHub, com os IDs do dono e do repositório ao lado dos nomes. A minha primeira condição esperava o formato antigo `repo:DONO/NOME:pull_request`, e no primeiro teste o GitHub teve o token recusado (`rejected by the attribute condition`). Corrigi montando o `sub` a partir de `github_repository_id` e `github_repository_owner_id` (lidos com `gh api repos/DONO/NOME`). Os IDs ainda impedem que um repositório apagado e recriado com o mesmo nome entre.
+- **Sem o papel Viewer.** O Checkov apontou o `roles/viewer` (CKV_GCP_117), e estava certo: ele lê quase tudo. Troquei pelos papéis de leitura específicos que o `plan` precisa nestes labs.
+- **Até o `plan` grava uma coisa.** Ele cria e apaga o objeto `.tflock` no bucket de state. Uma condição de IAM limita essa escrita ao prefixo `labs/`.
+- **Valor de segredo fica de fora.** O `roles/secretmanager.viewer` mostra os metadados dos segredos, não o conteúdo. Ler valores exigiria `secretAccessor`, que o CI não recebe.
 
 ## Checkov
 
-47 passed, 0 failed, 1 skipped with a reason in [`main.tf`](main.tf):
+47 aprovadas, 0 falhas e 1 alerta aceito, com justificativa no [`main.tf`](main.tf):
 
-| Check | Why |
+| Checagem | Motivo |
 | --- | --- |
-| `CKV_GCP_125`, GitHub OIDC trust condition | False positive. Checkov does not resolve `var.github_repository` inside the condition. I confirmed it: with the repository written literally, the same condition passes. |
+| `CKV_GCP_125`, condição de confiança do OIDC do GitHub | Falso positivo. O Checkov não resolve a variável `var.github_repository` dentro da condição. Confirmei: com o nome do repositório escrito por extenso, a mesma condição passa. |
 
-## How to run
+## Como rodar
 
-You need `roles/iam.workloadIdentityPoolAdmin`, `roles/iam.serviceAccountAdmin`, `roles/resourcemanager.projectIamAdmin` and `roles/storage.admin` on the state bucket.
+É preciso `roles/iam.workloadIdentityPoolAdmin`, `roles/iam.serviceAccountAdmin`, `roles/resourcemanager.projectIamAdmin` e `roles/storage.admin` no bucket de state.
 
 ```powershell
 cd projects/06-workload-identity-federation
@@ -63,22 +63,22 @@ terraform apply
 terraform output
 ```
 
-Then, in GitHub (Settings > Secrets and variables > Actions > Variables), create `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT` and `GCP_PROJECT_ID` with the outputs, and copy [`examples/terraform-plan.yml`](examples/terraform-plan.yml) to `.github/workflows/`. These are variables, not secrets: none of them is sensitive.
+Depois, no GitHub (Settings > Secrets and variables > Actions > Variables), crie `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT` e `GCP_PROJECT_ID` com as saídas, e copie o [`examples/terraform-plan.yml`](examples/terraform-plan.yml) para `.github/workflows/`. São variáveis, não secrets: nenhum desses valores é sensível.
 
-## How to test after deploying
+## Como testar depois de implantar
 
-- Open a pull request that touches `projects/`: the plan job should authenticate and show `No changes` for labs 01 and 02.
-- Run the same workflow from a fork or another repository: authentication must fail.
-- In Cloud Logging, the `sts.googleapis.com` entries show each token exchange and which repository asked for it.
+- Abra um pull request que mexa em `projects/`: o job de plan deve se autenticar e mostrar `No changes` nos labs 01 e 02.
+- Rode o mesmo workflow a partir de um fork ou de outro repositório: a autenticação tem que falhar.
+- No Cloud Logging, as entradas de `sts.googleapis.com` mostram cada troca de token e qual repositório pediu.
 
-## Cost
+## Custo
 
-Workload Identity Federation, the Security Token Service and service accounts have no cost.
+Workload Identity Federation, Security Token Service e contas de serviço não têm custo.
 
 ## Checklist
 
-- [x] Terraform written: pool, provider with a pinned condition, keyless service account, narrow roles and conditional bucket access
-- [x] Example workflow ready to enable
-- [x] `terraform fmt`, `validate` and Checkov passing locally and in CI
-- [x] Deployed on 2026-11-21 and repository variables created
-- [x] `terraform plan` running in a pull request without any key: PR #5, `No changes` in labs 01 and 02 (2026-11-21)
+- [x] Terraform escrito: pool, provedor com condição fixada, conta de serviço sem chave, papéis restritos e acesso condicional ao bucket
+- [x] Workflow de exemplo pronto para ativar
+- [x] `terraform fmt`, `validate` e Checkov aprovados localmente e no CI
+- [x] Implantado em 21/11/2026 e variáveis do repositório criadas
+- [x] `terraform plan` rodando num pull request sem nenhuma chave: PR #5, `No changes` nos labs 01 e 02 (21/11/2026)

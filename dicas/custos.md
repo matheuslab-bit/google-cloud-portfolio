@@ -24,7 +24,7 @@ O [`custos-recursos.sh`](../scripts/custos-recursos.sh) lista tudo isso num coma
 
 ## O que eu faço
 
-- **Orçamento com alerta desde o primeiro dia**, incluindo o alerta de gasto **previsto** ([Lab 04](../projects/04-monitoring-alerts/README.pt-BR.md)). Lembrando: orçamento avisa, mas não bloqueia.
+- **Orçamento com alerta desde o primeiro dia**, incluindo o alerta de gasto **previsto** ([Lab 04](../projects/04-monitoring-alerts/README.md)). Lembrando: orçamento avisa, mas não bloqueia.
 - **Escalar até zero.** Cloud Run com `min_instance_count = 0` não custa nada parado.
 - **Limite máximo de instâncias.** Protege a fatura se o serviço receber tráfego inesperado.
 - **Regras de ciclo de vida.** No bucket de state, versões antigas saem depois de 90 dias. No Artifact Registry, ficam só as 5 imagens mais recentes.
