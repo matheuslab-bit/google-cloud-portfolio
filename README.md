@@ -30,19 +30,25 @@ Labs de Google Cloud feitos com Terraform no meu próprio projeto: cada um foi i
 
 ## Como as peças se encaixam
 
-```text
-Lab 03: bucket de state  ──  guarda o state de todos os outros labs, um prefixo para cada
-
-Lab 01: portfolio-vpc
-  ├── portfolio-subnet    São Paulo   10.10.0.0/24
-  └── lab02-iowa-subnet   Iowa        10.20.0.0/24
-        └── lab02-secure-vm   (Lab 02, sem IP público)
-              ├── entrada: eu → IAP → SSH (porta 22)
-              ├── saída:   VM → Cloud NAT → internet (Lab 07, só quando preciso)
-              └── vigiada pelos alertas do Lab 04
-
-Lab 05: Cloud Run (API privada)  ·  Lab 06: GitHub Actions → credencial temporária → plan
+```mermaid
+flowchart LR
+    eu([Eu]) -->|"SSH pelo IAP"| vm
+    subgraph vpc["portfolio-vpc (Lab 01)"]
+        sp["portfolio-subnet<br/>São Paulo · 10.10.0.0/24"]
+        subgraph iowa["lab02-iowa-subnet · Iowa · 10.20.0.0/24"]
+            vm["lab02-secure-vm<br/>sem IP público (Lab 02)"]
+        end
+    end
+    vm -->|"saída, só quando preciso"| nat["Cloud NAT (Lab 07)"] --> internet((Internet))
+    alertas["Alertas e orçamento (Lab 04)"] -.->|vigia| vm
+    gh["GitHub Actions"] -->|"credencial temporária (Lab 06)"| plan["terraform plan"]
+    plan --> state[("Bucket de state (Lab 03)")]
+    run["API privada no Cloud Run (Lab 05)"]
 ```
+
+- **Entrada:** só eu, pelo IAP, que confere a minha identidade antes de abrir a porta 22.
+- **Saída:** a VM só fala com a internet quando o Cloud NAT existe.
+- **State:** o bucket do Lab 03 guarda o state de todos os labs, um prefixo para cada.
 
 ## Custo
 
