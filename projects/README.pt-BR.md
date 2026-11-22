@@ -30,6 +30,10 @@ Implantado em 21/11/2026. Serviço privado respondeu com token de identidade e `
 O GitHub Actions recebe credenciais de vida curta sem nenhuma chave guardada. A condição de confiança fixa o repositório e o campo `sub`, e a identidade do CI tem só papéis de leitura específicos.
 Implantado em 21/11/2026. O workflow de plan sem chave está ativo em `.github/workflows/terraform-plan.yml`.
 
+**[07: Cloud NAT](07-cloud-nat/README.pt-BR.md)**
+Cloud Router e Cloud NAT que dão à VM privada do Lab 02 saída para a internet, só de dentro para fora, limitada à sub-rede dela, com IP automático e log só de erros.
+Implantado, testado e destruído em 21/11/2026: `curl` 200 e `apt-get update` com o NAT, timeout antes e depois. Ligado só quando preciso, para manter o custo mensal baixo.
+
 ## Observações
 
 - O Lab 02 lê a `portfolio-vpc` do Lab 01 por um data source e cuida só da própria sub-rede em Iowa.

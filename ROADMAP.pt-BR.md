@@ -27,10 +27,11 @@ Meu plano de estudos de Google Cloud. É um plano, não uma lista do que eu já 
 - **21/11/2026:** Lab 04 implantado: canal de e-mail, três alertas (CPU, VM em silêncio, mudança de IAM) e um orçamento de R$ 50 por mês que desconta o Free Tier, mas não os créditos promocionais, para manter o gasto abaixo de US$ 10 por mês. Faltava ativar a API Cloud Resource Manager (agora está no README do lab).
 - **21/11/2026:** Lab 06 implantado: pool e provedor de Workload Identity Federation fixados neste repositório e em pull requests, conta de serviço só de leitura sem chave e o workflow de `terraform plan` dos labs 01 e 02.
 - **21/11/2026:** Lab 05 implantado em duas etapas: primeiro Artifact Registry, segredo e conta de serviço, depois a imagem `status-api:1.0.0` e o serviço privado no Cloud Run. Sem token ele responde 403; com token de identidade responde `greetingConfigured: true`. Os seis labs estão implantados.
+- **21/11/2026:** Lab 07 (Cloud NAT) escrito, implantado, testado e destruído em cerca de 2 minutos. Antes: a VM privada dava timeout para a internet; com o NAT: `curl` 200 e `apt-get update` funcionando; depois do destroy: timeout de novo.
 
 ## Próximos passos
 
-1. Cloud NAT para a VM privada e depois Cloud SQL com acesso privado.
+1. Cloud SQL com acesso privado, implantado e destruído no mesmo dia para caber no orçamento mensal.
 
 ## O que ainda quero estudar
 

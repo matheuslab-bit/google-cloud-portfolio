@@ -37,6 +37,7 @@ jobs:
           - 04-monitoring-alerts
           - 05-cloud-run-app
           - 06-workload-identity-federation
+          - 07-cloud-nat
     defaults:
       run:
         working-directory: projects/${{ matrix.lab }}

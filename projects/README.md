@@ -30,6 +30,10 @@ Deployed on 2026-11-21. Private service answered with an identity token and `gre
 GitHub Actions gets short-lived credentials with no stored key. The trust condition pins the repository and the `sub` claim, and the CI identity has only narrow read-only roles.
 Deployed on 2026-11-21. The keyless plan workflow is active in `.github/workflows/terraform-plan.yml`.
 
+**[07: Cloud NAT](07-cloud-nat/README.md)**
+Cloud Router and Cloud NAT that give the private Lab 02 VM outbound-only internet access, limited to its subnet, with an automatic IP and errors-only logging.
+Deployed, tested and destroyed on 2026-11-21: `curl` 200 and `apt-get update` with NAT, timeout before and after. Turned on only when needed, to keep the monthly cost low.
+
 ## Notes
 
 - Lab 02 reads the `portfolio-vpc` from Lab 01 through a data source and manages only its own Iowa subnet.

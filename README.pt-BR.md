@@ -15,7 +15,7 @@ Meus labs de infraestrutura Microsoft ficam em [microsoft-infra-labs](https://gi
 ## O que tem aqui
 
 ```text
-projects/   6 labs de Terraform, todos implantados
+projects/   7 labs de Terraform: 6 implantados e 1 ligado só quando preciso (Cloud NAT)
 scripts/    scripts com gcloud para auditar segurança e achar custos esquecidos
 dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo para a ACE
 ```
@@ -30,6 +30,7 @@ dicas/      dicas: gcloud, Terraform, segurança, custos, erros comuns e estudo 
 | 04 | [Monitoramento e orçamento](projects/04-monitoring-alerts/README.pt-BR.md) | Alertas de CPU, VM parada e mudança de IAM; orçamento mensal com alerta de previsão | **Implantado** em 21/11/2026, alertas testados |
 | 05 | [Aplicação no Cloud Run](projects/05-cloud-run-app/README.pt-BR.md) | Contêiner no Artifact Registry, serviço privado no Cloud Run, segredo lido do Secret Manager | **Implantado** em 21/11/2026, chamado com token de identidade |
 | 06 | [Workload Identity Federation](projects/06-workload-identity-federation/README.pt-BR.md) | GitHub Actions acessando o Google Cloud sem chave guardada, com condição de confiança fixada | **Implantado** em 21/11/2026 |
+| 07 | [Cloud NAT](projects/07-cloud-nat/README.pt-BR.md) | Saída para a internet da VM privada, sem IP público e sem porta de entrada | **Testado** em 21/11/2026 e destruído (ligado só quando preciso) |
 
 ## Como os labs implantados se encaixam
 
@@ -80,6 +81,7 @@ Quando rodei a auditoria neste projeto, ela achou três configurações que o Go
 │   ├── 04-monitoring-alerts/
 │   ├── 05-cloud-run-app/                 # Terraform + app/ (Node.js, Dockerfile, testes)
 │   ├── 06-workload-identity-federation/  # Terraform + examples/ (workflow sem chave)
+│   ├── 07-cloud-nat/                     # Cloud Router + NAT, ligado só quando preciso
 │   └── archive/                          # meu primeiro protótipo, guardado como referência
 ├── scripts/                              # scripts de auditoria e custo com gcloud
 ├── dicas/                                # dicas
@@ -88,7 +90,6 @@ Quando rodei a auditoria neste projeto, ela achou três configurações que o Go
 
 ## Próximos passos
 
-- Cloud NAT, para a VM privada receber atualizações sem IP público
 - Cloud SQL com acesso privado para a aplicação do Cloud Run
 - A certificação Associate Cloud Engineer (ACE)
 
